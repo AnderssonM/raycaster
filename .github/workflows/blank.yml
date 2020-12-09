@@ -33,11 +33,12 @@ jobs:
           git fetch origin gh-pages
           git branch --all
           git remote -v
-          git checkout -B gh-pages
-          cp README.md info.md
+          git checkout gh-pages
+          mkdir -p build
+          cp README.md build/README.md
           git config user.name "GitHub"
           git config user.email "noreply@github.com"
-          git add --all
+          git add build
           git commit -m"Auto Deploy"
           #git push -f origin gh-pages
           
