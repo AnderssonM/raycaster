@@ -30,7 +30,7 @@ jobs:
         run: |
           echo Hello, world!
           ls -la
-          git checkout gh-pages
+          git checkout -B gh-pages
           cp README.md info.md
           git config user.name "GitHub"
           git config user.email "noreply@github.com"
