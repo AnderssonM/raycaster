@@ -30,6 +30,7 @@ jobs:
         run: |
           echo Hello, world!
           ls -la
+          git fetch origin gh-pages
           git branch --all
           git remote -v
           git checkout -B gh-pages
