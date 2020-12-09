@@ -32,7 +32,8 @@ jobs:
           ls -la
           git checkout -B gh-pages
           cp README.md info.md
-          git config user.email "autdeploy@anderssonm.github.io"
+          git config user.name "GitHub"
+          git config user.email "noreply@github.com"
           git commit -a -m"Auto Deploy"
           git push origin gh-pages
           
