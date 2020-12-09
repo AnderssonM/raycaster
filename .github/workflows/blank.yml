@@ -30,7 +30,7 @@ jobs:
         run: |
           echo Hello, world!
           ls -la
-          git branch -all
+          git branch --all
           git remote -v
           git checkout -B gh-pages
           cp README.md info.md
