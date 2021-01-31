@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: RenderPass/RenderPass.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: RenderPass/RenderPass.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * RenderPass
+ * A class representing one pass (step) of the rendering chain
+ * @author Martin Andersson, V.I.C, 2015. All rights reserved
+ * @constructor
+ * @this {RenderPass}
+ * @param {string} vertShader vertex shader for the pass
+ * @param {string} fragShader fragment shader for the pass
+ */
+function RenderPass(vertShader,fragShader) {
+//    this.URLroot = options['URLroot'] + "/shaders/";
+    this.renderBufferOptions = {
+        'minFilter': THREE.LinearFilter,
+        'magFilter': THREE.LinearFilter,
+        'anisotropy': 2,
+        'format': THREE.RGBFormat,
+        'type': THREE.FloatType,
+        'depthBuffer': false,
+        'stencilBuffer': false
+    };
+
+    var params = {
+        'vertexShader': this.__transmograf + vertShader,
+        'fragmentShader': this.__transmograf + fragShader,
+        'depthWrite': false,
+        'depthTest': false,
+        'side': THREE.FrontSide
+    };
+    /**  @dict */this.material = new THREE.ShaderMaterial(params);
+
+    this.material['uniforms'] = {};
+    this.material['defines'] = {};
+    this.material['needsUpdate'] = true;
+    this._render = this.renderToScreen;
+    this.renderTime = 0;
+}
+/**
+ * createBuffer, create a new buffer of size bufferSize
+ * @param {THREE.Vector2} bufferSize the size of the buffer as a V2 Object {x:width,y:height}
+ */
+RenderPass.prototype.createBuffer = function (bufferSize, useByDefault) {
+    this.bufferSize = bufferSize;
+    console.log("RenderPass:Creating buffer (w,h)", bufferSize.x, bufferSize.y);
+    this.renderBuffer = new THREE.WebGLRenderTarget(bufferSize.x, bufferSize.y, this.renderBufferOptions);
+    this.renderBuffer['wrapS'] = THREE.ClampToEdgeWrapping;
+    this.renderBuffer['wrapT'] = THREE.ClampToEdgeWrapping;
+    if (useByDefault === true || useByDefault === undefined) {
+        this._render = this.renderToBuffer;
+    }
+};
+/**
+ * loadShader, load the associated GLSL shader code
+ * @param {String} path the URL of the shader to load
+ * @returns {String}
+ */
+RenderPass.prototype.loadShader = function (path) {
+    var request = new XMLHttpRequest();
+    request.open('GET', path, false);
+    request.send(null);
+    if (request.status === 200) {
+//        console.log("RenderPass:Success, loading shader:", path, request.responseText.length);
+        return request.responseText;
+    }
+    else {
+        console.log("RenderPass:Failed, loading shader:", path, request.responseText.length);
+    }
+};
+/**
+ * setUniform, sets the a uniform of the material
+ * @param {string} name Name of the uniform to set
+ * @param {string} type uniform type
+ * @param {Object} value uniform value
+ */
+RenderPass.prototype.setUniform = function (name, type, value) {
+    this.material['uniforms'][name] = {'type': type, 'value': value};
+    //console.log("RenderPass:setUniform:",this.material['uniforms'][name]);
+};
+/**
+ * renderToBuffer, renders the current view to a frame buffer 
+ * @param {THREE.WebGLRenderer} renderer the WebGLRenderer
+ * @param {THREE.Scene} scene the scene to render 
+ * @param {THREE.Camera} camera the Camera to use for rendering
+ */
+RenderPass.prototype.renderToBuffer = function (renderer, scene, camera) {
+    var omat = scene['overrideMaterial'];
+    scene['overrideMaterial'] = this.material;
+    renderer.render(scene, camera, this.renderBuffer, true);
+    scene['overrideMaterial'] = omat;
+};
+/**
+ * renderToScreen, renders the current view to the screen
+ * @param {THREE.WebGLRenderer} renderer the WebGLRenderer
+ * @param {THREE.Scene} scene the scene to render 
+ * @param {THREE.Camera} camera the Camera to use for rendering
+ */
+RenderPass.prototype.renderToScreen = function (renderer, scene, camera) {
+    var omat = scene['overrideMaterial'];
+    scene['overrideMaterial'] = this.material;
+    renderer.render(scene, camera);
+    scene['overrideMaterial'] = omat;
+};
+/**
+ * renderToScreen, renders the current view to the screen
+ * @param {THREE.WebGLRenderer} renderer the WebGLRenderer
+ * @param {THREE.Scene} scene the scene to render 
+ * @param {THREE.Camera} camera the Camera to use for rendering
+ */
+RenderPass.prototype.renderToCanvas = function (renderer, scene, camera, canvas) {
+    console.log("RenderPass:renderToBuffer:", renderer, scene, "|", camera, canvas);
+    var omat = scene['overrideMaterial'];
+    var w = this.bufferSize.x;
+    var h = this.bufferSize.y;
+    var rctx = renderer.context;
+    var ictx = canvas.getContext('2d');
+
+    var pixels = new Uint8Array(4 * w * h);
+    var imageData = ictx.createImageData(w, h);
+
+    scene['overrideMaterial'] = this.material;
+    renderer.render(scene, camera, this.renderBuffer, true);
+    scene['overrideMaterial'] = omat;
+    rctx['bindFramebuffer'](rctx['FRAMEBUFFER'], this.renderBuffer['__webglFramebuffer']);
+    rctx['readPixels'](0, 0, w, h, rctx['RGBA'], rctx['UNSIGNED_BYTE'], pixels);
+    imageData.data.set(pixels);
+    ictx.putImageData(imageData, 0, 0);
+};
+/**
+ * render, renders the current view to the default output. Defaults to
+ * renderToScreen in the RenderPass base class, but may be changed in inherriting 
+ * classes.
+ * @param {THREE.WebGLRenderer} renderer the WebGLRenderer
+ * @param {THREE.Scene} scene the scene to render 
+ * @param {THREE.Camera} camera the Camera to use for rendering
+ */
+RenderPass.prototype.render = function (renderer, scene, camera) {
+    var t0 = performance.now();
+    this._render(renderer, scene, camera);
+    this.renderTime = performance.now() - t0;
+};
+
+/**
+ * 
+ * @param {THREE.WebGLRenderer.context} renderer
+ * @param {Number} x
+ * @param {Number} y
+ * @returns {Uint8Array} The pixel data 
+ */
+RenderPass.prototype.readPixels = function (ctx, x, y) {
+    x = Math.floor(this.bufferSize.x * x);
+    y = Math.floor(this.bufferSize.y * y);
+//    ctx.bindRenderbuffer(ctx.RENDERBUFFER, this.renderBuffer.__webglRenderbuffer);
+    ctx['bindFramebuffer'](ctx['FRAMEBUFFER'], this.renderBuffer['__webglFramebuffer']);
+//    ctx.bindTexture(ctx.TEXTURE, this.renderBuffer.__webglTexture);
+
+    var pixels = new Uint8Array(4);
+    ctx['readPixels'](x, y, 1, 1, ctx['RGBA'], ctx['UNSIGNED_BYTE'], pixels);
+    return {x: pixels[0] / 255, y: pixels[1] / 255, z: pixels[2] / 255};
+};
+
+// Import GLSL Shaders
+from("!").import("ShaderCollection.js");</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="CameraCrew.html">CameraCrew</a></li><li><a href="ColorMap.html">ColorMap</a></li><li><a href="GeneralDataLoader.html">GeneralDataLoader</a></li><li><a href="leaf.html">leaf</a></li><li><a href="NativeImageLoader.html">NativeImageLoader</a></li><li><a href="OpenRayCaster.html">OpenRayCaster</a></li><li><a href="OpenVolumeData.html">OpenVolumeData</a></li><li><a href="PointDataLoader.html">PointDataLoader</a></li><li><a href="RayTracingPass.html">RayTracingPass</a></li><li><a href="RenderPass.html">RenderPass</a></li><li><a href="TestHarness.html">TestHarness</a></li><li><a href="THREE.OrbitControls.html">OrbitControls</a></li><li><a href="VolDataLoader.html">VolDataLoader</a></li><li><a href="VolumeEgressCoordinatePass.html">VolumeEgressCoordinatePass</a></li><li><a href="VolumeGeometry.html">VolumeGeometry</a></li><li><a href="VolumeIngressCoordinatePass.html">VolumeIngressCoordinatePass</a></li></ul><h3>Namespaces</h3><ul><li><a href="Colormaps.html">Colormaps</a></li><li><a href="MissingMath.html">MissingMath</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Sep 20 2016 13:34:34 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

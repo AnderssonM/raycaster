@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Loaders/PointDataLoader.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Loaders/PointDataLoader.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>from(js_root, "Loaders").import("GeneralDataLoader.js");
+from(js_root).import("MissingMath.js");
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * @constructor
+ * @param {type} volumeData
+ * @returns {PointDataLoader}
+ */
+function PointDataLoader(volumeData) {
+    console.log("PointDataLoader constructor");
+    GeneralDataLoader.call(this);
+    this.onError = function (mess, color) {
+	console.error("VolumeData:err:" + mess);
+    };
+    this.volumeData = volumeData;
+    this.responseType = 'text';
+}
+
+PointDataLoader.prototype = Object.create(GeneralDataLoader.prototype);
+
+
+PointDataLoader.prototype.load = function (URL) {
+    this.loadURL(URL);
+};
+
+PointDataLoader.prototype.done = function (responseData) {
+
+    var points = JSON.parse(responseData)['points'];
+
+    this.volumeData.maxVal = Number.NEGATIVE_INFINITY;
+    this.volumeData.minVal = Number.POSITIVE_INFINITY;
+    this.volumeData.avgVal = 0;
+    this.volumeData.sumVal = 0;
+
+    var min_x = 0, max_x = 0;
+    var min_y = 0, max_y = 0;
+    var min_z = 0, max_z = 0;
+    var x, y, z, v, si;
+    for (var id in points) {
+	// console.log("point",id);
+	max_x = Math.max(max_x, points[id][0]);
+	max_y = Math.max(max_y, points[id][1]);
+	max_z = Math.max(max_z, points[id][2]);
+	min_x = Math.min(min_x, points[id][0]);
+	min_y = Math.min(min_y, points[id][1]);
+	min_z = Math.min(min_z, points[id][2]);
+	v = parseFloat(points[id][3]);
+	this.volumeData.maxVal = Math.max(this.volumeData.maxVal, v);
+	this.volumeData.minVal = Math.min(this.volumeData.minVal, v);
+	this.volumeData.sumVal += v;
+    }
+    var offset_x = 0;
+    var offset_y = 0;
+    var offset_z = 0;
+
+    if (min_x &lt; 0) {
+	offset_x = Math.floor(-min_x);
+    }
+    if (min_y &lt; 0) {
+	offset_y = Math.floor(-min_y);
+    }
+    if (min_z &lt; 0) {
+	offset_z = Math.floor(-min_z);
+    }
+
+    var rng_x = Math.ceil(max_x - min_x);
+    var rng_y = Math.ceil(max_y - min_y);
+    var rng_z = Math.ceil(max_z - min_z);
+
+    console.log("offset", offset_x, offset_y, offset_z)
+    var gf = MissingMath.greatestFactors(Math.ceil(max_z - min_z));
+    this.volumeData.setDimensions(rng_x, rng_y, rng_z, gf.low, gf.high);
+
+    if (rng_x > rng_y && rng_x > rng_z) {
+	this.volumeData.scalex = 1.0;
+	this.volumeData.scaley = rng_y / rng_x;
+	this.volumeData.scalez = rng_z / rng_x;
+    }
+    if (rng_y > rng_x && rng_y > rng_z) {
+	this.volumeData.scaley = 1.0;
+	this.volumeData.scalex = rng_x / rng_y;
+	this.volumeData.scalez = rng_z / rng_y;
+    }
+    if (rng_z > rng_y && rng_z > rng_x) {
+	this.volumeData.scalez = 1.0;
+	this.volumeData.scaley = rng_y / rng_z;
+	this.volumeData.scalex = rng_x / rng_z;
+    }
+
+    for (var id in points) {
+	x = Math.floor(points[id][0]);
+	y = Math.floor(points[id][1]);
+	z = Math.floor(points[id][2]);
+	v = Math.floor(points[id][3]);
+	this.volumeData.setPointValue(x + offset_x, y + offset_y, z + offset_z, v);
+    }
+    this.volumeData.avgVal = this.volumeData.sumVal / points.length;
+    this.volumeData.values['needsUpdate'] = true;
+    this.volumeData.onLoadSuccess();
+};
+
+;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="CameraCrew.html">CameraCrew</a></li><li><a href="ColorMap.html">ColorMap</a></li><li><a href="GeneralDataLoader.html">GeneralDataLoader</a></li><li><a href="leaf.html">leaf</a></li><li><a href="NativeImageLoader.html">NativeImageLoader</a></li><li><a href="OpenRayCaster.html">OpenRayCaster</a></li><li><a href="OpenVolumeData.html">OpenVolumeData</a></li><li><a href="PointDataLoader.html">PointDataLoader</a></li><li><a href="RayTracingPass.html">RayTracingPass</a></li><li><a href="RenderPass.html">RenderPass</a></li><li><a href="TestHarness.html">TestHarness</a></li><li><a href="THREE.OrbitControls.html">OrbitControls</a></li><li><a href="VolDataLoader.html">VolDataLoader</a></li><li><a href="VolumeEgressCoordinatePass.html">VolumeEgressCoordinatePass</a></li><li><a href="VolumeGeometry.html">VolumeGeometry</a></li><li><a href="VolumeIngressCoordinatePass.html">VolumeIngressCoordinatePass</a></li></ul><h3>Namespaces</h3><ul><li><a href="Colormaps.html">Colormaps</a></li><li><a href="MissingMath.html">MissingMath</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Sep 20 2016 13:34:34 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

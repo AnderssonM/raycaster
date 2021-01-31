@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <div>    <canvas id="original" width="300" height="300" style="border: 1px solid grey"></canvas>
+            <canvas id="samples" width="300" height="300" style="border: 1px solid grey"></canvas></div>
+        <canvas id="canvas_krieg1" width="300" height="300" style="border: 1px solid grey"></canvas>
+        <canvas id="canvas_krieg2" width="300" height="300" style="border: 1px solid grey"></canvas>
+        <script>
+
+            var NodeTypes = Object.freeze({EMPTY: "EMPTY", NODE: "NODE", LEAF: "LEAF"});
+
+            var Lx = 0;
+            var Hx = 1;
+            var Ly = 0;
+            var Hy = 2;
+
+
+            function Qnode(parent_level, x_min, x_max, y_min, y_max) {
+
+                this.level = parent_level + 1;
+                this.type = NodeTypes.EMPTY;
+
+                this.leaf_x = 0;
+                this.leaf_y = 0;
+
+                this.leaf_value = 0;
+                this.x_max = x_max;
+                this.x_min = x_min;
+                this.x_mid = x_min + (x_max - x_min) / 2;
+                this.y_max = y_max;
+                this.y_min = y_min;
+                this.y_mid = y_min + (y_max - y_min) / 2;
+
+                this.nodes = [];
+                if (this.level === 1) {
+                    this.split();
+                }
+
+
+            }
+            Qnode.prototype.split = function () {
+
+                this.nodes[Lx + Ly ] = new Qnode(this.level, this.x_min, this.x_mid, this.y_min, this.y_mid);
+                this.nodes[Lx + Hy ] = new Qnode(this.level, this.x_min, this.x_mid, this.y_mid, this.y_max);
+                this.nodes[Hx + Ly ] = new Qnode(this.level, this.x_mid, this.x_max, this.y_min, this.y_mid);
+                this.nodes[Hx + Hy ] = new Qnode(this.level, this.x_mid, this.x_max, this.y_mid, this.y_max);
+                if (this.type === NodeTypes.LEAF) {
+                    var id = this.getQuadIndex(this.leaf_x, this.leaf_y);
+                    var oct = this.nodes[id];
+                    oct.leaf_x = this.leaf_x;
+                    oct.leaf_y = this.leaf_y;
+                    oct.leaf_value = this.leaf_value;
+                    this.leaf_x = 0;
+                    this.leaf_y = 0;
+                    this.leaf_value = 0;
+                    oct.type = NodeTypes.LEAF;
+                }
+
+                this.type = NodeTypes.NODE;
+            };
+            Qnode.prototype.ctxDrawNode = function (ctx, node, color) {
+                ctx.globalAlpha = .1;
+//		ctx.globalCompositeOperation = "source-over";
+                var l = node.level;
+                var size_x = node.x_max - node.x_min;
+                var size_y = node.y_max - node.y_min;
+
+                var x = this.x_mid - size_x / 2;
+                var y = this.y_mid - size_y / 2;
+
+//		var styles = ["green", "red", "blue", "black", "grey", "orange", "purple", "brown"];
+
+                if (color !== "black") {
+                    ctx.globalAlpha = 1;
+                    ctx.strokeStyle = color; // styles[l - 3];
+                    ctx.strokeRect(x, y, size_x, size_y);
+                } else {
+                    ctx.fillStyle = "black"; // styles[l - 3];
+                    ctx.fillRect(x, y, size_x, size_y);
+                }
+
+
+            };
+            Qnode.prototype.drawLeaf = function (ctx, node, color) {
+                ctx.globalAlpha = 1.0;
+                ctx.globalCompositeOperation = "source-over";
+//                console.log("color", color);
+                ctx.beginPath();
+                if (color === "blue") {
+                    ctx.fillStyle = color;
+                    ctx.arc(node.leaf_x, node.leaf_y, 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = color;
+                    ctx.arc(node.leaf_x, node.leaf_y, 1, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+
+            };
+            Qnode.prototype.dumpToCanvas = function (ctx) {
+
+
+                if (this.type === NodeTypes.LEAF) {
+//		    console.log( "Leaf (", node.leaf_x, node.leaf_y, node.leaf_z, ") -> ", node.leaf_value);
+                    var v = this.leaf_value;
+                    hex1 = v[0] > 15 ? v[0].toString(16) : "0" + v[0].toString(16);
+                    hex2 = v[1] > 15 ? v[1].toString(16) : "0" + v[1].toString(16);
+                    hex3 = v[2] > 15 ? v[2].toString(16) : "0" + v[2].toString(16);
+
+                    this.drawLeaf(ctx, this, "#" + hex1 + hex2 + hex3);
+                } else {
+
+                    if (this.type === NodeTypes.NODE) {
+                        this.ctxDrawNode(ctx, this, "black");
+                        for (var n = 0; n < 4; n++) {
+                            var node = this.nodes[n];
+                            node.dumpToCanvas(ctx);
+                        }
+                    } else {
+
+
+                    }
+                }
+            };
+            var mindist = Number.MAX_VALUE;
+            Qnode.prototype.dump = function (x, y) {
+                for (var n = 0; n < 4; n++) {
+                    var node = this.nodes[n];
+
+                    if (node.type === NodeTypes.LEAF) {
+//                        console.log(node.leaf_value);
+                        mindist = Math.min(mindist, node.leafDistance(x, y));
+                    } else if (node.type === NodeTypes.NODE) {
+
+                        node.dump(x, y);
+                    }
+                }
+            };
+
+            Qnode.prototype.getQuadIndex = function (x, y) {
+
+                var id = (x > this.x_mid) ? Hx : Lx;
+                id += (y > this.y_mid) ? Hy : Ly;
+
+                return id;
+            };
+            Qnode.prototype.findNode = function (x, y) {
+
+                var id = this.getQuadIndex(x, y);
+                var chosen_node = this.nodes[id];
+                if (chosen_node.type === NodeTypes.NODE) {
+                    chosen_node = chosen_node.findNode(x, y);
+                }
+                return chosen_node;
+            };
+
+            var ndst_counter = 0;
+            Qnode.prototype.nodeDistance = function (x, y) {
+                ndst_counter++;
+                var dx = Math.max(this.x_min - x, 0, x - this.x_max);
+                var dy = Math.max(this.y_min - y, 0, y - this.y_max);
+
+                return Math.sqrt(dx * dx + dy * dy);
+            };
+            var ldst_counter = 0;
+            Qnode.prototype.leafDistance = function (x, y) {
+
+                ldst_counter++;
+                var dx = this.leaf_x - x;
+                var dy = this.leaf_y - y;
+                return Math.sqrt(dx * dx + dy * dy);
+            };
+
+
+            window.NNnode = 12;
+            window.PNnode = 12;
+            window.NNdist = Number.MAX_VALUE;
+            window.PNdist = Number.MAX_VALUE;
+
+            Qnode.prototype.evalChildren = function (ctx, x, y) {
+//                this.fastCandidate(ctx, x, y, z);
+                for (var nn = 0; nn < 4; nn++) {
+                    if (this.nodes[nn]) {
+                        var candidate = this.nodes[nn];
+                        if (candidate.type === NodeTypes.LEAF) {
+                            var node_dist = candidate.leafDistance(x, y)
+                            if (node_dist < window.NNdist) {
+                                window.NNdist = node_dist;
+                                window.NNnode = candidate;
+//                                this.drawLeaf(ctx, candidate, "green");
+                            } else if (node_dist < window.PNdist) {
+                                window.PNnode = candidate;
+                                window.PNdist = node_dist;
+                            }
+
+//                            else {
+////                                this.drawLeaf(ctx, candidate, "red");
+//                            }
+                        } else if (this.nodes[nn].type === NodeTypes.NODE) {
+                            if (candidate.nodeDistance(x, y) < window.PNdist) {
+                                candidate.evalChildren(ctx, x, y);
+//                                candidate.ctxDrawNode(ctx, candidate, "blue");
+                            } 
+//                            else {
+////                                candidate.ctxDrawNode(ctx, candidate, "green");
+//
+//                            }
+                        }
+                    }
+                }
+            };
+            Qnode.prototype.fastCandidate = function (ctx, x, y)
+            {
+// 
+                var ni = this.getQuadIndex(x, y);
+                for (var n = ni; n < ni + 4; n++) {
+                    var i = n % 4;
+                    var inode = this.nodes[i];
+                    if (inode) {
+                        switch (inode.type) {
+                            case NodeTypes.NODE:
+                                if (inode.nodeDistance(x, y) < window.NNdist) {
+                                    inode.fastCandidate(ctx, x, y);
+                                    return;
+                                }
+                                break;
+                            case NodeTypes.LEAF:
+                                var node_dist = inode.leafDistance(x, y);
+                                if (node_dist < window.NNdist) {
+                                    window.NNdist = node_dist;
+                                    window.NNnode = inode;
+                                } else if (node_dist < window.PNdist) {
+                                    window.PNnode = inode;
+                                    window.PNdist = node_dist;
+                                }
+                                break;
+                            case NodeTypes.EMPTY:
+                                break;
+                        }
+                    }
+                }
+            };
+            Qnode.prototype.findCandidate = function (ctx, x, y)
+            {
+//                this.fastCandidate(ctx, x, y, z);
+                var ni = this.getQuadIndex(x, y);
+                for (var n = ni; n < ni + 4; n++) {
+                    var i = n % 4;
+                    var inode = this.nodes[i];
+                    if (inode) {
+                        switch (inode.type) {
+                            case NodeTypes.NODE:
+                                if (inode.nodeDistance(x, y) < window.NNdist) {
+                                    inode.findCandidate(ctx, x, y);
+                                }
+                                break;
+                            case NodeTypes.LEAF:
+                                var node_dist = inode.leafDistance(x, y);
+                                if (node_dist < window.NNdist) {
+                                    window.PNnode = window.NNnode;
+                                    window.PNdist = window.NNdist;
+                                    window.NNdist = node_dist;
+                                    window.NNnode = inode;
+                                }
+                                break;
+                            case NodeTypes.EMPTY:
+                                break;
+                        }
+                    }
+                }
+            };
+            Qnode.prototype.findPoint = function (x, y) {
+                var selected_quad = this.findNode(x, y);
+                if (selected_quad) {
+                    if (selected_quad.type === NodeTypes.LEAF) {
+                        console.info("POINT ", x, y, selected_quad.leaf_value);
+                    }
+                }
+
+            };
+            Qnode.prototype.InsertPoint = function (x, y, val) {
+//		if (this.level > 24)
+//		    return;
+                var chosen_node = this.findNode(x, y);
+                if (chosen_node.type === NodeTypes.EMPTY) {
+//		    console.log("Inserted Point", x, y, z, chosen_node);
+                    chosen_node.type = NodeTypes.LEAF;
+                    chosen_node.leaf_x = x;
+                    chosen_node.leaf_y = y;
+                    chosen_node.leaf_value = val;
+                } else if (chosen_node.type === NodeTypes.LEAF) {
+                    chosen_node.split();
+                    chosen_node.InsertPoint(x, y, val);
+                }
+
+            };
+            Qnode.prototype.findNN = function (ctx, x, y)
+            {
+                var tmpNode = {};
+                tmpNode.type = NodeTypes.LEAF;
+                tmpNode.leaf_x = x;
+                tmpNode.leaf_y = y;
+
+//                this.drawLeaf(ctx, tmpNode, "yellow");
+
+                window.NNdist = Number.MAX_VALUE;
+                window.NNnode = 0;
+                this.findCandidate(ctx, x, y);
+//                this.fastCandidate(ctx, x, y, z);
+                this.evalChildren(ctx, x, y, z);
+
+//             console.log(window.NNdist);
+//                if (window.NNnode)
+//                    this.drawLeaf(ctx, window.NNnode, "orange");
+
+            };
+
+
+            var seed = 3.22;
+            t = new Qnode(0, 0, 300, 0, 300);
+            img = new Image();
+
+            var ctx = document.getElementById("samples").getContext("2d");
+
+            function random() {
+                var x = Math.sin((seed++) / 100) * 10000;
+                return x - Math.floor(x);
+            }
+            function sampleImage() {
+                var ctxo = document.getElementById("original").getContext("2d");
+//                var image = document.getElementById("img");
+                ctxo.drawImage(img, 0, 0);
+                var sampleData = ctxo.getImageData(0, 0, 300, 300);
+                console.time("insert sample points");
+
+                for (var n = 0; n < 900; n++) {
+
+                    var x = 10 + Math.random() * 280;
+                    var y = 10 + Math.random() * 280;
+                    var s = (Math.floor(x) + Math.floor(y) * 300) * 4;
+
+                    var v1 = (sampleData.data[s]);
+                    var v2 = (sampleData.data[s + 1]);
+                    var v3 = (sampleData.data[s + 2]);
+
+                    t.InsertPoint(x, y, [v1, v2, v3]);
+                }
+//                t.InsertPoint(10, 10, [128, 0, 0]);
+//                t.InsertPoint(10, 290, [0, 128, 0]);
+//                t.InsertPoint(290, 290, [0, 0, 128]);
+                console.timeEnd("insert sample points");
+                t.dumpToCanvas(ctx);
+                krieg1();
+                console.log("back from k1");
+                krieg2();
+                console.log("back from k2");
+
+            }
+
+
+            img.onload = sampleImage;
+            img.src = './sampleData/flow.png';
+
+
+
+
+//
+//
+            var ctx2 = document.getElementById("canvas_krieg1").getContext("2d");
+            var ctx3 = document.getElementById("canvas_krieg2").getContext("2d");
+            var imd2 = ctx2.createImageData(300, 300);
+            var imd3 = ctx3.createImageData(300, 300);
+
+//            t.dump(155, 205, 205);
+//            console.timeEnd("dump");
+
+
+            function interpolate(v1, d1, v2, d2) {
+
+                var d12factor = (d1 / (-d2 - d1));
+
+                var va1 = v1[0];
+                var va2 = v1[1];
+                var va3 = v1[2];
+                var vb1 = v2[0];
+                var vb2 = v2[1];
+                var vb3 = v2[2];
+
+                return[
+                    va1 + (vb1 - va1) * d12factor,
+                    va2 + (vb2 - va2) * d12factor,
+                    va3 + (vb3 - va3) * d12factor];
+            }
+            function krieg1() {
+                var n = 0;
+                var total = 0;
+                console.time("Krieg1");
+
+                for (var y = 0; y < 300; y += 1) {
+                    for (var x = 0; x < 300; x += 1) {
+
+                        window.NNdist = Number.MAX_VALUE;
+                        window.PNdist = Number.MAX_VALUE;
+
+                        t.fastCandidate(ctx, x, y);
+//                    t.findCandidate(ctx, x, y);
+//                        t.evalChildren(ctx, x, y);
+//                    t.findNode(x, y);
+
+                        var v = interpolate(NNnode.leaf_value, NNdist, PNnode.leaf_value, PNdist);
+
+                        imd2.data[n    ] = v[0];
+                        imd2.data[n + 1] = v[1];
+                        imd2.data[n + 2] = v[2];
+                        imd2.data[n + 3] = 255;//- window.NNdist;//- (window.NNdist*4);
+
+                        total = total + window.NNdist;
+                        n += 4;
+                    }
+                }
+                console.timeEnd("Krieg1");
+                ctx2.putImageData(imd2, 0, 0);
+            }
+
+            function krieg2() {
+                console.log("krieg2");
+                var total = 0;
+                var n = 0;
+                console.time("Krieg2");
+                for (var y = 0; y < 300; y += 1) {
+                    for (var x = 0; x < 300; x += 1) {
+                        window.NNdist = Number.MAX_VALUE;
+                        window.PNdist = Number.MAX_VALUE;
+
+//                        t.fastCandidate(ctx, x, y);
+//                    t.findCandidate(ctx, x, y);
+                        t.evalChildren(ctx, x, y);
+//                    t.findNode(x, y);
+                        var v = interpolate(NNnode.leaf_value, NNdist, PNnode.leaf_value, PNdist);
+
+                        imd3.data[n    ] = v[0];
+                        imd3.data[n + 1] = v[1];
+                        imd3.data[n + 2] = v[2];
+                        imd3.data[n + 3] = 255;//- window.NNdist;//- (window.NNdist*4);
+
+                        total = total + window.NNdist;
+                        n += 4;
+                    }
+                }
+                console.timeEnd("Krieg2");
+                ctx3.putImageData(imd3, 0, 0);
+            }
+//            console.log("Total " + total);
+//            console.log("NN DISTANCE:" + window.NNdist + " ," + ldst_counter + " ," + ndst_counter);
+//            console.log("ALL DISTANCE: " + mindist);
+
+        </script>
+
+    </body>
+</html>

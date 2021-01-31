@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body> <div  id="header">Ray Casting 3D Volume Viewer</div>
+        <div id="container">
+            <div id="slMenu" style="height:  calc(100% - 74px); overflow-y: hidden; border: 1px solid rgba(66,79,130,1);border-radius: 6px;padding:4px;margin-top: 5px;margin-bottom:5px">
+<!--                <div id="viewXYdiv">
+                    <canvas style="border:1px solid grey" id="viewXY" height="200" width="200"></canvas>
+                </div>
+                <div id="viewZXdiv">
+                    <canvas style="border:1px solid grey" id="viewZX" height="200" width="200"></canvas>
+                </div>               
+                <div id="viewYZdiv">
+                    <canvas style="border:1px solid grey" id="viewYZ" height="200" width="200"></canvas>
+                </div>-->
+
+            </div>
+            <div id="canvasBox">
+
+                <canvas id="canvas"> </canvas>        
+
+            </div>
+            <div style="height: calc(100% - 74px); border: 1px solid rgba(66,79,130,1);border-radius: 6px;padding:4px;margin-top: 5px;margin-bottom:5px"  >
+                <div id="MaxLabel">max</div>
+                <div style="width: 20px;height:calc(100% - 50px)">
+                    <div id="ColorBar" style="height:100%"></div>
+<!--                    <div id="errorBar" style="position: relative; bottom:100px; height: 100px;width:12px;  border-bottom: 1px solid red;border-top: 1px solid red;border-left: 2px solid blue"> 
+                        <div id="cVal" style=" height: 10px;width:8px; border-bottom: 3px solid greenyellow;">  </div>
+                    </div>    -->
+
+                </div>
+
+                <div id="MinLabel">min</div>
+            </div> 
+            <div id="toolBox"  ></div>       
+        </div>
+        <div style="height:1.5em; " id="footer">
+            <table style="width: 600px">
+                <tr>
+                    <td  style="width: 300px" id="coords">
+                    <td style="width: 300px" id="vals">
+            </table>
+        </div>
+        <script>
+            console.log = console.log.bind(console);
+        </script>
+        
+        <script src="../utils/dependency.js" ></script>
+        <script src="js/mainApp.js" ></script>
+        <script>
+            var app = new App();
+        </script>
+    </body>
+</html>

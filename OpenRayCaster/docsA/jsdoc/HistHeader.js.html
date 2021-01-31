@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Loaders/HistDataLib/HistHeader.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Loaders/HistDataLib/HistHeader.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Creates an instance of HistHeader
+ * 
+ * @author Martin Andersson, V.I.C. based on the work of Dr. Hosoya
+ * @author Takaaki HOSOYA
+ * @constructor
+ * @this {HistHeader}
+ * 
+ */
+function HistHeader() {
+
+}
+;
+HistHeader.prototype = {
+//Header
+    _sizeHeader: -1,
+    _sizeSuppl: -1,
+    _datataName: "NO DATA",
+    _compressionFormat: -1,
+    _runNumber: -1,
+    _compType: -1,
+    _numHists: -1,
+    _totalSizeNonComp: -1,
+    _totalSizeComp: -1,
+    // Sub Header .HST
+    _beamLineCode: "NO BL CODE", //arrayToStr(new Uint8Array(buffer, 152), 4),//// Beamline code string 4
+    _moduleId: -1,
+    _detectorId: -1,
+    _acquisitionStartTime: -1,
+    // Sub Header .QMP
+    _CPUDAQ: -1,
+    /**
+     *  Deserialize the header information from the byte array.
+     *  @param  {ArrayBuffer} buffer  Buffer array of the header data.
+     *  @param  {number} offset  buffer offset for header
+     */
+
+    deserialize: function(buffer, offset) {
+        var dataView = new DataView(buffer, offset);
+        this._sizeHeader = dataView.getUint32(0, true);
+        this._sizeSuppl = dataView.getUint32(4, true); // size of subheader [bytes] UINT4
+        this._dataName = arrayToStr(new Uint8Array(buffer, 8), 128); // Data  name string 128
+        this._compressionFormat = dataView.getUint32(136, true); // compression format uint4
+        this._numHists = dataView.getUint32(140, true); //// number of histogram blocks uint4 
+        this._totalSizeNonComp = dataView.getUint32(144, true); //// total size of hist data block non compressed  Uint4 
+        this._totalSizeComp = dataView.getUint32(148, true); // // total size of hist data block compressed Uint4 
+
+        if (this._sizeSuppl === 20) {
+            this._beamLineCode = arrayToStr(new Uint8Array(buffer, 152), 4); //// Beamline code string 4
+            this._moduleId = dataView.getUint32(156, true); ////Readout module id uint 4
+            this._detectorId = dataView.getUint32(160, true); ////detector id uint 4
+            this._runNumber = dataView.getUint32(164, true); ////run number uint 4
+            this._acquisitionStartTime = utimeToDate(dataView.getUint32(168, true)); ////acquisition starting time uint4
+
+        }
+        else {
+            this._CPUDAQ = dataView.getUint32(152, true); ////Readout module id uint 4
+            this._runNumber = dataView.getUint32(156, true); ////detector id uint 4
+            this._acquisitionStartTime = utimeToDate(dataView.getUint32(160, true)); ////run number uint 4     
+        }
+        console.log("numHists" + this._numHists);
+        console.log("acq Start Time:" + this._acquisitionStartTime);
+        return (offset + this._sizeHeader + this._sizeSuppl);
+    },
+    //! Returns the size of the Header
+    get zizeHeader() {
+        return this._sizeHeader;
+    },
+    //! Returns the size of the Sub Header
+    get sizeSuppl() {
+        return this._sizeSuppl;
+    },
+    //! Returns the name of the Histogram data set
+    get dataName() {
+        return this._dataName;
+    },
+    //! Returns the compression format
+    get compressionFormat() {
+        return this._compressionFormat;
+    },
+    //! Returns the compression format in  string format
+    get stringCompressionFormat() {
+        return this._compressionFormat === 0 ? "Not Compressed" : "Deflate";
+    },
+    //! Returns the number of histograms in data set
+    get numHists() {
+        return this._numHists;
+    },
+              //! Returns the start value of the axis.
+    get sizeHists() {
+        return this._totalSizeNonComp;
+    },
+    get sizeHistCompressed() {
+        return this._totalSizeComp;
+    },
+    get sizeTotal() {
+        return this._totalSizeComp + this._sizeHeader;
+    },
+    get beamlineCode() {
+        return this._beamLineCode;
+    },
+    get readoutModuleId() {
+        return this._moduleId;
+    },
+    get detectorID() {
+        return this._detectorId;
+    },
+    get runNumber() {
+        return this._runNumber;
+    },
+    get startTime() {
+        return this._acquisitionStartTime;
+    },
+    get daqID() {
+        return this._CPUDAQ;
+    }
+//        this.__defineGetter__("sizeHistCompressed", function() {
+//return _totalSizeComp;
+//        });
+//        this.__defineGetter__("sizeTotal", function() {
+//return _totalSizeComp + _sizeHeader;
+//        });
+//        this.__defineGetter__("beamlineCode", function() {
+//return _beamLineCode;
+//        });
+//        this.__defineGetter__("readoutModuleId", function() {
+//return _moduleId;
+//        });
+//        this.__defineGetter__("detectorID", function() {
+//return _detectorId;
+//        });
+//        this.__defineGetter__("runNumber", function() {
+//return _runNumber;
+//        });
+//        this.__defineGetter__("startTime", function() {
+//return _acquisitionStartTime;
+//        });
+//        this.__defineGetter__("daqID", function() {
+//return _CPUDAQ;
+//        });
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="AdvancedRayCaster.html">AdvancedRayCaster</a></li><li><a href="AdvancedVolumeData.html">AdvancedVolumeData</a></li><li><a href="HistAxis.html">HistAxis</a></li><li><a href="HistDataLoader.html">HistDataLoader</a></li><li><a href="HistHeader.html">HistHeader</a></li><li><a href="Histogram.html">Histogram</a></li><li><a href="HistogramLoader.html">HistogramLoader</a></li><li><a href="PointCloudData.html">PointCloudData</a></li><li><a href="RecipDataLoader.html">RecipDataLoader</a></li><li><a href="TestHarness.html">TestHarness</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertBinaryToArray">convertBinaryToArray</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu May 21 2015 17:03:45 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

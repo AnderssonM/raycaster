@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <script src="js/lib.depend.js"  ></script>
+
+        <!--        <script type="text/externs" id="extern1" src="lib.js/three.externs.js"></script>
+                <script type="text/externs" id="extern2" src="lib.js/externs.js"></script>-->
+
+        <form action="http://closure-compiler.appspot.com/compile" method="POST" target="_blank">
+            <label>Output format</label>
+            <select name="output_format">
+                <option>xml</option>
+                <option selected="">text</option>
+                <option>json</option>
+            </select>
+            <!--<input name="output_format" value="xml" />-->
+            <label>compiled_code</label>
+            <input type="checkbox" name="output_info" value="compiled_code" />
+            <label>warnings</label>
+            <input type="checkbox" name="output_info" value="warnings" />
+            <label>errors</label>
+            <input type="checkbox" name="output_info" value="errors" />
+            <label>statistics</label>
+            <input type="checkbox" name="output_info" value="statistics">
+            <br>
+            <label>Compilation Level</label>
+            <select name="compilation_level">
+                <option >WHITESPACE_ONLY</option>
+                <option selected="">SIMPLE_OPTIMIZATIONS</option>    
+                <option>ADVANCED_OPTIMIZATIONS</option>    
+            </select> 
+            <br>
+            <label>Warning Level</label>
+
+            <select name="warning_level">
+                <option>QUIET</option>
+                <option selected="">DEFAULT</option>
+                <option>VERBOSE</option>
+            </select>
+            <label> Input </label>
+            <input name="language" value="ECMASCRIPT5" />
+            <br>
+            <!--<input name="output_file_name" value=" default.js" />-->
+            <br>
+            <textarea name="js_code" id="js_code" cols="80" rows="5" > Code</textarea>
+            <br>
+            <label> Extern1 </label><br>
+            <textarea name="js_externs" id="js_externs1" cols="80" rows="5" >   Extern1     </textarea>
+            <br>
+            <label> Extern2 </label><br>
+            <textarea name="js_externs" id="js_externs2" cols="80" rows="5" >   Extern2     </textarea>
+            <br>
+
+            <input type="submit" />
+        </form>
+        <hr>
+        <p> Dependencies </p>
+        <textarea name="libs" id="js_libs" cols="80" rows="5" >        </textarea>
+        <br>
+
+        <script>
+            from(js_root).import("OpenRayCaster.js");
+            var request1 = new XMLHttpRequest();
+            request1.open('GET', "lib.js/three.externs.js", false);
+            request1.send();
+            console.log("Whole app loaded");
+            document.getElementById("js_code").value =getClosure();
+            document.getElementById("js_externs1").value = request1.response;
+
+            var request2 = new XMLHttpRequest();
+            request2.open('GET', "lib.js/externs.js", false);
+            request2.send();
+            document.getElementById("js_externs2").value = request2.response;
+
+            document.getElementById("js_libs").value = concat_libs;
+           
+
+        </script>
+    </body>
+</html>

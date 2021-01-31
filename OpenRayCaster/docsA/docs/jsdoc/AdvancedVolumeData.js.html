@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: AdvancedVolumeData.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: AdvancedVolumeData.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>from("../OpenRayCaster/js/").import("OpenVolumeData.js");
+from("../AdvancedRayCaster/js/Loaders").import("RecipDataLoader.js");
+from("../AdvancedRayCaster/js/Loaders").import("HistDataLoader.js");
+
+/**
+ * VolumeData, volume data class
+ * @author Martin Andersson, V.I.C, 2015. All rights reserved
+ * @constructor
+ * @argument {object} uniforms obsolete uniforms
+ * 
+ */
+function AdvancedVolumeData() {
+    OpenVolumeData.call(this);
+}
+AdvancedVolumeData.prototype = Object.create(OpenVolumeData.prototype);
+/**
+ * setPointValue, sets a voxel value (val) for the address
+ * @this {VolumeData}
+ * @argument {Number} address address to set
+ * @argument {Number} val value to set
+ **/
+AdvancedVolumeData.prototype.setPointValue = function (px, py, pz, val) {
+
+    var siA = this.getAddress(px, py, pz);
+    var siB = this.getAddress(px, py, pz+1);
+//    console.log(px,py,pz,si,val);
+    this.values['image']['data'][siA] = val;
+    this.values['image']['data'][siB] = val;
+    // this.values['flipY'] = false;
+    this.values['needsUpdate'] = true;
+    // this.onLoadSuccess();
+};
+AdvancedVolumeData.prototype.setPointWithMagnitude = function (px, py, pz, val, magnitude, fading) {
+    var rdist = 0.0;
+    for (x = px - magnitude; x &lt; px + magnitude; x++) {
+
+        if (x > 0 && x &lt; this.width) {
+            for (y = py - magnitude; y &lt; py + magnitude; y++) {
+
+                if (y > 0 && y &lt; this.height) {
+                    for (z = pz - magnitude; z &lt; pz + magnitude; z++) {
+                        if (z > 0 && z &lt; this.depth) {
+                            var dist = Math.sqrt(Math.pow(Math.abs(px - x), 2) + Math.pow(Math.abs(py - y), 2) + Math.pow(Math.abs(pz - z), 2));
+                            if (dist &lt; magnitude) {
+                                if (fading) {
+                                    rdist = dist / magnitude;
+                                }
+                                var si = this.getAddress(x, y, z);
+                                this.values['image']['data'][si] += val - (rdist * val);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+};
+/**
+ * getValue, gets the voxel value (val) for the address
+ * @this {VolumeData}
+ * @argument {Number} address address to set
+ * @returns {Number} the value of the address
+ **/
+AdvancedVolumeData.prototype.getValue = function (address) {
+    return this.values['image']['data'][address];
+};
+
+AdvancedVolumeData.prototype.NormCoordToRealCoord = function (coord) {
+    var x = Math.round(coord.x * this.width);
+    var y = Math.round(coord.y * this.height);
+    var z = Math.round(coord.z * this.depth);
+    return {x: x, y: y, z: z};
+};
+/**
+ * getRayData, gets the range of voxel values from xyz1 to xyz2
+ * @returns {Object}
+ */
+AdvancedVolumeData.prototype.getRayData = function (rFront, rBack) {
+
+
+    var xSteps = Math.abs(rFront.x - rBack.x);
+    var ySteps = Math.abs(rFront.y - rBack.y);
+    var zSteps = Math.abs(rFront.z - rBack.z);
+
+    var numSteps = Math.max(xSteps, ySteps);
+    numSteps = Math.max(numSteps, zSteps);
+
+    numSteps = Math.ceil(numSteps);
+    var xDelta = (rBack.x - rFront.x) / numSteps;
+    var yDelta = (rBack.y - rFront.y) / numSteps;
+    var zDelta = (rBack.z - rFront.z) / numSteps;
+    var sum = 0;
+    var min = Number.POSITIVE_INFINITY;
+    var max = Number.NEGATIVE_INFINITY;
+//     this.setValue(this.getAddress(x1, y1, z1),128);
+//     this.setValue(this.getAddress(x2, y2, z2),255);
+    var values = Array(numSteps);
+    for (var step = 0; step &lt; numSteps + 1; step++) {
+//
+        var px = rFront.x + parseInt(step * xDelta);
+        var py = rFront.y + parseInt(step * yDelta);
+        var pz = rFront.z + parseInt(step * zDelta);
+//        this.setValue(this.getAddress(px, py, pz), 255);
+        var val = this.getValue(this.getAddress(px, py, pz));
+////        console.log(px, py, pz,val);
+        if (val) {
+            min = Math.min(min, val);
+            max = Math.max(max, val);
+            sum += val;
+        }
+        values.push(val);
+    }
+    if (min === Number.POSITIVE_INFINITY) {
+        min = 0;
+    }
+    if (max === Number.NEGATIVE_INFINITY) {
+        max = 0;
+    }
+    var avg;
+    if (numSteps === 0) {
+        avg = "0.00";
+    }
+    else {
+        avg = Math.round(sum / numSteps * 10) / 10;
+    }
+    return {values: values, min: min, max: max, sum: sum, avg: avg};
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="AdvancedRayCaster.html">AdvancedRayCaster</a></li><li><a href="AdvancedVolumeData.html">AdvancedVolumeData</a></li><li><a href="HistAxis.html">HistAxis</a></li><li><a href="HistDataLoader.html">HistDataLoader</a></li><li><a href="HistHeader.html">HistHeader</a></li><li><a href="Histogram.html">Histogram</a></li><li><a href="HistogramLoader.html">HistogramLoader</a></li><li><a href="PointCloudData.html">PointCloudData</a></li><li><a href="RecipDataLoader.html">RecipDataLoader</a></li><li><a href="TestHarness.html">TestHarness</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertBinaryToArray">convertBinaryToArray</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu May 21 2015 17:03:45 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

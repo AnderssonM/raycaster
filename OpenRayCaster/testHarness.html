@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" >
+        <style>
+            body{
+                margin: 50px;
+
+            }
+            h1, h2, h3{
+                font-family: sans-serif;
+            }
+            strong{
+                font-family: sans-serif;
+                font-size: large;
+            }
+            pre, textArea{
+                font-family: serif, monospace;
+
+                border-top: 1px solid lightsteelblue;
+                border-bottom: 1px solid lightsteelblue;
+                color: darkslateblue;
+                background: lightgrey;
+                font-family: serif, monospace;
+
+                border-top: 1px solid lightsteelblue;
+                border-bottom: 1px solid lightsteelblue;
+                color: darkslateblue;
+                background: lightgrey;
+
+
+
+            }
+            canvas{
+                margin-top: 0px;
+                border: 1px solid darkgray;
+                height: 256px;
+                width: 256px;
+            }
+            textArea{
+                margin-top: 0px;
+                background-color: lightgray;
+                width: 400px;
+                max-height: 252px;
+                height: 252px;
+            }
+            pre{
+                margin-top: 8px;
+                border: 1px solid darkgray;
+                background-color: lightgrey;
+                height: 254px;
+                overflow-y: scroll;
+
+            }
+            img{
+                border: 1px solid green;
+                height: 256px;
+                width: 256px;             
+            }
+        </style>
+    </head>
+    <body>
+        <h2> RayCaster tests - open version </h2>
+        <table id="testResults">
+
+        </table>
+        <script>
+            console.log = console.log.bind(console);
+	    var from = function(){return {import:function(){}};};
+	    var js_lib= js_root="";
+	    var root="./";
+        </script>
+        <script src="build/js/lib.depend.js" ></script>
+        <script src="build/js/OpenRayCaster.js"></script>
+        <script src="js/apiTestHarness.js" ></script>
+	
+        <script defer>
+            var TH = new TestHarness();
+
+
+        </script>
+    </body>
+</html>

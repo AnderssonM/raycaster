@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Loaders/RecipDataLoader.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Loaders/RecipDataLoader.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>from("../OpenRayCaster/js/Loaders").import("GeneralDataLoader.js");
+from("../OpenRayCaster/js").import("MissingMath.js");
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * @constructor
+ * @param {type} volumeData
+ * @returns {RecipDataLoader}
+ */
+function RecipDataLoader(volumeData) {
+    console.log("RecipDataLoader constructor");
+    GeneralDataLoader.call(this);
+    this.onError = function (mess, color) {
+        console.error("VolumeData:err:" + mess);
+    };
+    this.volumeData = volumeData;
+}
+
+RecipDataLoader.prototype = Object.create(GeneralDataLoader.prototype);
+
+
+RecipDataLoader.prototype.load = function (URL) {
+    this.loadURL(URL);
+};
+
+RecipDataLoader.prototype.done = function (responseData) {
+
+    console.log("VolumeData: loadRecDataSuccess", responseData);
+//    this.Hist3D = this.histLoader.hists[1];
+    var header = new DataView(responseData, 0, 60);
+    var src_width = header.getUint32(48, true);
+    var src_height = header.getUint32(52, true);
+    var src_depth = header.getUint32(56, true);
+
+    var width = MissingMath.nextPow2(src_width);
+    var height = MissingMath.nextPow2(src_height);
+    var depth = MissingMath.nextPow2(src_depth);
+
+    var offset_x = Math.round((width - src_width) / 2);
+    var offset_y = Math.round((height - src_height) / 2);
+    var offset_z = Math.round((depth - src_depth) / 2);
+
+    console.log("VolumeData: dimensions (x,y,z)", src_width, src_height, src_depth);
+    console.log("VolumeData: offset (x,y,z)", offset_x, offset_y, offset_z);
+    var gf = MissingMath.greatestFactors(depth);
+
+    this.volumeData.setDimensions(width, height, depth, gf.high, gf.low)
+    this.volumeData.scalex = header.getFloat64(24, true);
+    this.volumeData.scaley = header.getFloat64(32, true);
+    this.volumeData.scalez = header.getFloat64(40, true);
+
+    var scale_max = Math.max(Math.max(this.volumeData.scalex, this.volumeData.scaley), this.volumeData.scalez);
+
+    this.volumeData.scalex /= scale_max;
+    this.volumeData.scaley /= scale_max;
+    this.volumeData.scalez /= scale_max;
+
+    console.log("VolumeData: scale (x,y,z)", this.volumeData.scalex, this.volumeData.scaley, this.volumeData.scalez);
+    // var src = new Uint8Array(bf.slice(60));
+    var src = new DataView(responseData, 60);
+    // var data = new Uint8Array(128 * 128 * 256);
+    var i = 0;
+    var si, sb;
+    this.volumeData.maxVal = Number.NEGATIVE_INFINITY;
+    this.volumeData.minVal = Number.POSITIVE_INFINITY;
+    this.volumeData.avgVal = 0;
+    this.volumeData.sumVal = 0;
+    var val;
+
+    for (var i = 0; i &lt; src_width * src_height * src_depth; i++) {
+        val = parseInt(src.getFloat64(i * 8, true));
+        this.volumeData.maxVal = Math.max(this.volumeData.maxVal, val);
+        this.volumeData.minVal = Math.min(this.volumeData.minVal, val);
+        this.volumeData.sumVal += val;
+    }
+    this.volumeData.avgVal = this.volumeData.sumVal / (src_depth * src_width * src_height);
+    this.volumeData.values['flipY'] = false;
+    console.log("min,avg,max,sum", this.volumeData.minVal, this.volumeData.avgVal, this.volumeData.maxVal, this.volumeData.sumVal);
+    var mul = this.volumeData.sampleRangeMax / this.volumeData.maxVal;
+    for (var x = 0; x &lt; src_width; x++) {
+        for (var y = 0; y &lt; src_height; y++) {
+            for (var z = 0; z &lt; src_depth; z++) {
+                si = this.volumeData.getAddress(offset_x + x, offset_y + y, offset_z + z) * 2;
+                
+                val = Math.floor((src.getFloat64(sb, true) * mul));
+                this.volumeData.values['image']['data'][ si ] = val;
+                if (z &lt; src_depth -1){
+                    sb = (1+z + y * src_depth + x * src_height * src_depth) * 8;
+                    val = Math.floor((src.getFloat64(sb  , true) * mul));
+                }
+         
+                this.volumeData.values['image']['data'][ si + 1 ] = val;
+                i++;
+            }
+        }
+    }
+
+
+    this.volumeData.values['needsUpdate'] = true;
+    this.volumeData.onLoadSuccess();
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="AdvancedRayCaster.html">AdvancedRayCaster</a></li><li><a href="AdvancedVolumeData.html">AdvancedVolumeData</a></li><li><a href="HistAxis.html">HistAxis</a></li><li><a href="HistDataLoader.html">HistDataLoader</a></li><li><a href="HistHeader.html">HistHeader</a></li><li><a href="Histogram.html">Histogram</a></li><li><a href="HistogramLoader.html">HistogramLoader</a></li><li><a href="PointCloudData.html">PointCloudData</a></li><li><a href="RecipDataLoader.html">RecipDataLoader</a></li><li><a href="TestHarness.html">TestHarness</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertBinaryToArray">convertBinaryToArray</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu May 21 2015 17:03:45 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

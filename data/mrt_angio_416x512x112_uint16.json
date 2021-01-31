@@ -1,0 +1,13 @@
+{
+ "info":"NRRD0004# Complete NRRD file format specification at:# http://teem.sourceforge.net/nrrd/format.html",
+"type": "uint16",
+"dimension": 3,
+"space": "left-posterior-superior",
+"sizes": [416, 512 ,112],
+"space directions": [[1,0,0],[0,1,0], [0,0,1]],
+"kinds": "domain domain domain",
+"endian": "little",
+"encoding": "raw",
+"space origin": [-85.696,-105.472,-23.072],
+"data file": "mrt_angio_416x512x112_uint16.raw"
+}

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        <canvas id="canvas_xy" width="805" height="805" style="background-color: white"></canvas>
+        <script>
+
+            var NodeTypes = Object.freeze({EMPTY: "EMPTY", NODE: "NODE", LEAF: "LEAF"});
+
+            var Lx = 0;
+            var Hx = 1;
+            var Ly = 0;
+            var Hy = 2;
+            var Lz = 0;
+            var Hz = 4;
+
+            function node(parent_level, x_min, x_max, y_min, y_max, z_min, z_max) {
+
+                this.level = parent_level + 1;
+                this.type = NodeTypes.EMPTY;
+
+                this.leaf_x = 0;
+                this.leaf_y = 0;
+                this.leaf_z = 0;
+                this.leaf_value = 0;
+                this.x_max = x_max;
+                this.x_min = x_min;
+                this.x_mid = x_min + (x_max - x_min) / 2;
+                this.y_max = y_max;
+                this.y_min = y_min;
+                this.y_mid = y_min + (y_max - y_min) / 2;
+                this.z_max = z_max;
+                this.z_min = z_min;
+                this.z_mid = z_min + (z_max - z_min) / 2;
+                this.nodes = [];
+                if (this.level === 1) {
+                    this.split();
+                }
+
+
+            }
+            node.prototype.split = function () {
+
+                this.nodes[Lx + Ly + Lz] = new node(this.level, this.x_min, this.x_mid, this.y_min, this.y_mid, this.z_min, this.z_mid);
+                this.nodes[Lx + Ly + Hz] = new node(this.level, this.x_min, this.x_mid, this.y_min, this.y_mid, this.z_mid, this.z_max);
+                this.nodes[Lx + Hy + Lz] = new node(this.level, this.x_min, this.x_mid, this.y_mid, this.y_max, this.z_min, this.z_mid);
+                this.nodes[Lx + Hy + Hz] = new node(this.level, this.x_min, this.x_mid, this.y_mid, this.y_max, this.z_mid, this.z_max);
+                this.nodes[Hx + Ly + Lz] = new node(this.level, this.x_mid, this.x_max, this.y_min, this.y_mid, this.z_min, this.z_mid);
+                this.nodes[Hx + Ly + Hz] = new node(this.level, this.x_mid, this.x_max, this.y_min, this.y_mid, this.z_mid, this.z_max);
+                this.nodes[Hx + Hy + Lz] = new node(this.level, this.x_mid, this.x_max, this.y_mid, this.y_max, this.z_min, this.z_mid);
+                this.nodes[Hx + Hy + Hz] = new node(this.level, this.x_mid, this.x_max, this.y_mid, this.y_max, this.z_mid, this.z_max);
+                if (this.type === NodeTypes.LEAF) {
+//		    console.info("SPLITTING LEAF");
+                    var id = this.getOctantIndex(this.leaf_x, this.leaf_y, this.leaf_z);
+                    var oct = this.nodes[id];
+                    oct.leaf_x = this.leaf_x;
+                    oct.leaf_y = this.leaf_y;
+                    oct.leaf_z = this.leaf_z;
+                    oct.leaf_value = this.leaf_value;
+                    oct.type = NodeTypes.LEAF;
+                }
+
+                this.type = NodeTypes.NODE;
+            };
+            node.prototype.ctxDrawNode = function (ctx, node, color) {
+                ctx.globalAlpha = .1;
+//		ctx.globalCompositeOperation = "source-over";
+                var l = node.level;
+                var size_x = node.x_max - node.x_min;
+                var size_y = node.y_max - node.y_min;
+                var size_z = node.z_max - node.z_min;
+                var x = this.x_mid - size_x / 2;
+                var y = this.y_mid - size_y / 2;
+                var z = this.z_mid - size_z / 2;
+//		var styles = ["green", "red", "blue", "black", "grey", "orange", "purple", "brown"];
+
+                if (color !== "black") {
+                    ctx.globalAlpha = 1;
+                    ctx.strokeStyle = color; // styles[l - 3];
+                    ctx.strokeRect(x, y, size_x, size_y);
+                    ctx.strokeRect(404 + z, y, size_z, size_y);
+                    ctx.strokeRect(x, 404 + z, size_x, size_z);
+                } else {
+                    ctx.fillStyle = "black"; // styles[l - 3];
+                    ctx.fillRect(x, y, size_x, size_y);
+                    ctx.fillRect(404 + z, y, size_z, size_y);
+                    ctx.fillRect(x, 404 + z, size_x, size_z);
+                }
+            };
+            
+            node.prototype.drawLeaf = function (ctx, node, color) {
+                ctx.globalAlpha = 1.0;
+                ctx.globalCompositeOperation = "source-over";
+                ctx.beginPath();
+                if (color === "blue") {
+                    ctx.fillStyle = color;
+                    ctx.arc(node.leaf_x, node.leaf_y, 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                } else {
+                    ctx.strokeStyle = color;
+                    ctx.arc(node.leaf_x, node.leaf_y, 2, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+
+                ctx.beginPath();
+                ctx.arc(404 + node.leaf_z, node.leaf_y, 2, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(node.leaf_x, 404 + node.leaf_z, 2, 0, 2 * Math.PI);
+                ctx.fill();
+            };
+            node.prototype.dumpToCanvas = function (ctx) {
+
+
+                if (this.type === NodeTypes.LEAF) {
+//			console.log( "Leaf (", node.leaf_x, node.leaf_y, node.leaf_z, ") -> ", node.leaf_value);
+                    this.drawLeaf(ctx, this, "blue");
+                } else {
+                    this.ctxDrawNode(ctx, this, "black");
+                    if (this.type === NodeTypes.NODE) {
+
+                        for (var n = 0; n < 8; n++) {
+                            var node = this.nodes[n];
+                            node.dumpToCanvas(ctx);
+                        }
+                    }
+                }
+            };
+            var mindist = Number.MAX_VALUE;
+            node.prototype.dump = function (x, y, z) {
+                for (var n = 0; n < 8; n++) {
+                    var node = this.nodes[n];
+                    var indent = Array(node.level).join(" ");
+                    if (node.type === NodeTypes.LEAF) {
+                        mindist = Math.min(mindist, node.leafDistance(x, y, z));
+//			console.log(indent,"Leaf (", node.leaf_x, node.leaf_y, node.leaf_z, ") -> ", node.leaf_value);
+//			console.log(indent,"Leaf (", node.leaf_x, node.leaf_y, node.leaf_z, ") -> ", this.leafDistance(x,y,z));
+
+                    } else if (node.type === NodeTypes.NODE) {
+//			console.log(indent, "Node (", node.x_min, node.y_min, node.z_min, ":", node.x_max, node.y_max, node.z_max, ")");
+                        node.dump(x, y, z);
+                    }
+                }
+            };
+
+            node.prototype.getOctantIndex = function (x, y, z) {
+
+                var id = (x > this.x_mid) ? Hx : Lx;
+                id += (y > this.y_mid) ? Hy : Ly;
+                id += (z > this.z_mid) ? Hz : Lz;
+                return id;
+            };
+            node.prototype.findNode = function (x, y, z) {
+
+                var id = this.getOctantIndex(x, y, z);
+                var chosen_node = this.nodes[id];
+                if (chosen_node.type === NodeTypes.NODE) {
+                    chosen_node = chosen_node.findNode(x, y, z);
+                }
+                return chosen_node;
+            };
+
+            var ndst_counter = 0;
+            node.prototype.nodeDistance = function (x, y, z) {
+                ndst_counter++;
+                var dx = Math.max(this.x_min - x, 0, x - this.x_max);
+                var dy = Math.max(this.y_min - y, 0, y - this.y_max);
+                var dz = Math.max(this.z_min - z, 0, z - this.z_max);
+                return Math.sqrt(dx * dx + dy * dy + dz * dz);
+            };
+            var ldst_counter = 0;
+            node.prototype.leafDistance = function (x, y, z) {
+
+                ldst_counter++;
+                var dx = this.leaf_x - x;
+                var dy = this.leaf_y - y;
+                var dz = this.leaf_z - z;
+                return Math.sqrt(dx * dx + dy * dy + dz * dz);
+            };
+
+
+            var NNnode;
+            var NNdist = Number.MAX_VALUE;
+            node.prototype.evalChildren = function (ctx, x, y, z) {
+//                this.fastCandidate(ctx, x, y, z);
+                for (var nn = 0; nn < 8; nn++) {
+                    if (this.nodes[nn]) {
+                        var candidate = this.nodes[nn];
+                        if (candidate.type === NodeTypes.LEAF) {
+                            if (candidate.leafDistance(x, y, z) < NNdist) {
+                                NNdist = candidate.leafDistance(x, y, z);
+                                NNnode = candidate;
+//                                this.drawLeaf(ctx, candidate, "green");
+                            }
+//                            else {
+////                                this.drawLeaf(ctx, candidate, "red");
+//                            }
+                        } else if (this.nodes[nn].type === NodeTypes.NODE) {
+                            if (candidate.nodeDistance(x, y, z) < NNdist) {
+                                candidate.evalChildren(ctx, x, y, z);
+//                                candidate.ctxDrawNode(ctx, candidate, "blue");
+                            } else {
+//                                candidate.ctxDrawNode(ctx, candidate, "green");
+
+                            }
+                        }
+                    }
+                }
+            };
+            node.prototype.fastCandidate = function (ctx, x, y, z)
+            {
+// 
+                var ni = this.getOctantIndex(x, y, z);
+                for (var n = ni; n < ni + 8; n++) {
+                    var i = n % 8;
+                    var inode = this.nodes[i];
+                    if (inode) {
+                        switch (inode.type) {
+                            case NodeTypes.NODE:
+                                if (inode.nodeDistance(x, y, z) < NNdist) {
+                                    inode.fastCandidate(ctx, x, y, z);
+                                    return;
+                                }
+                                break;
+                            case NodeTypes.LEAF:
+                                var node_dist = inode.leafDistance(x, y, z);
+                                if (node_dist < NNdist) {
+                                    NNdist = node_dist;
+                                }
+                                break;
+                            case NodeTypes.EMPTY:
+                                break;
+                        }
+                    }
+                }
+            };
+            node.prototype.findCandidate = function (ctx, x, y, z)
+            {
+//                this.fastCandidate(ctx, x, y, z);
+                var ni = this.getOctantIndex(x, y, z);
+                for (var n = ni; n < ni + 8; n++) {
+                    var i = n % 8;
+                    var inode = this.nodes[i];
+                    if (inode) {
+                        switch (inode.type) {
+                            case NodeTypes.NODE:
+                                if (inode.nodeDistance(x, y, z) < NNdist) {
+                                    inode.findCandidate(ctx, x, y, z);
+                                }
+                                break;
+                            case NodeTypes.LEAF:
+                                var node_dist = inode.leafDistance(x, y, z);
+                                if (node_dist < NNdist) {
+                                    NNdist = node_dist;
+                                }
+                                break;
+                            case NodeTypes.EMPTY:
+                                break;
+                        }
+                    }
+                }
+            };
+            node.prototype.findPoint = function (x, y, z) {
+                var selected_octant = this.findNode(x, y, z);
+                if (selected_octant) {
+                    if (selected_octant.type === NodeTypes.LEAF) {
+                        console.info("POINT ", x, y, z, selected_octant.leaf_value);
+                    }
+                }
+
+            };
+            node.prototype.InsertPoint = function (x, y, z, val) {
+//		if (this.level > 24)
+//		    return;
+                var chosen_node = this.findNode(x, y, z);
+                if (chosen_node.type === NodeTypes.EMPTY) {
+//		    console.log("Inserted Point", x, y, z, chosen_node);
+                    chosen_node.type = NodeTypes.LEAF;
+                    chosen_node.leaf_x = x;
+                    chosen_node.leaf_y = y;
+                    chosen_node.leaf_z = z;
+                    chosen_node.leaf_value = val;
+                } else if (chosen_node.type === NodeTypes.LEAF) {
+                    chosen_node.split();
+                    chosen_node.InsertPoint(x, y, z, val);
+                }
+
+            };
+            node.prototype.findNN = function (ctx, x, y, z)
+            {
+                var tmpNode = {};
+                tmpNode.type = NodeTypes.LEAF;
+                tmpNode.leaf_x = x;
+                tmpNode.leaf_y = y;
+                tmpNode.leaf_z = z;
+//                this.drawLeaf(ctx, tmpNode, "yellow");
+
+                NNdist = Number.MAX_VALUE;
+                NNnode = 0;
+                this.findCandidate(ctx, x, y, z);
+//                this.fastCandidate(ctx, x, y, z);
+//                this.evalChildren(ctx, x, y, z);
+
+//             console.log(NNdist);
+//                if (NNnode)
+//                    this.drawLeaf(ctx, NNnode, "orange");
+
+            };
+
+
+
+            var seed = 3.42;
+            function random() {
+                var x = Math.sin((seed++) / 100) * 10000;
+                return x - Math.floor(x);
+            }
+            t = new node(0, 0, 400, 0, 400, 0, 400);
+            console.time("insert points");
+            for (var n = 0; n < 8096; n++) {
+                t.InsertPoint(25 + random() * 350, 25 + random() * 350, 25 + random() * 350, n);
+            }
+            console.timeEnd("insert points");
+            var ctx = document.getElementById("canvas_xy").getContext("2d");
+//            t.dumpToCanvas(ctx);
+//            t.dump(155, 205, 205);
+//            console.timeEnd("dump");
+
+            NNdist = Number.MAX_VALUE;
+            NNnode = null;
+            console.time("findNN");
+            var total = 0;
+            for (var z = 0; z < 400; z += 4) {
+//                console.log("z:" + z);
+                for (var y = 0; y < 400; y += 4) {
+                    for (var x = 0; x < 400; x += 4) {
+//                        t.fastCandidate(ctx, x, y, z);
+//                        t.findCandidate(ctx, x, y, z);
+                        t.findNode(x,y,z);
+
+//                        t.fastCandidate(ctx, x, y, z);
+//                        t.evalChildren(ctx, x, y, z);
+                        total = total + NNdist;
+                    }
+                }
+            }
+
+            console.timeEnd("findNN");
+            console.log("Total " + total);
+            console.log("NN DISTANCE:" + NNdist + " ," + ldst_counter + " ," + ndst_counter);
+            console.log("ALL DISTANCE: " + mindist);
+
+        </script>
+
+    </body>
+</html>

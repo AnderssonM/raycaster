@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" href="assets/style.css">
+    </head>
+    <body>
+        <div id="container">
+
+            <div id="canvasBox">
+                <div  id="header">Ray Casting 3D Volume Viewer</div>
+                <canvas id="canvas"> </canvas>        
+            </div>
+            <div style="height: calc(100% - 20px); border: 1px solid rgba(66,79,130,1);border-radius: 6px;padding:4px;margin-top: 5px;margin-bottom:5px"  >
+                <div id="MaxLabel">max</div>
+                <div id="ColorBar" style="width: 20px;height:calc(100% - 50px)"></div>            
+                <div id="MinLabel">min</div>
+            </div> 
+            <div id="toolBox"  ></div>       
+        </div>
+        <script>
+            console.log = console.log.bind(console);
+        </script>
+        <script src="build/js/lib.gui.js" ></script>
+        <script src="build/js/RayCasterGUI.js" ></script>
+        <script>
+            var app = new App(25,256,2,2);
+        </script>
+    </body>
+</html>

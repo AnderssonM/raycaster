@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div id="container">
+
+            <div id="canvasBox">
+                <div  id="header">Ray Casting 3D Volume Viewer</div>
+                <canvas id="canvas"> </canvas>     
+                <div style="height:1.5em; " id="footer">
+                    <table style="width: 600px">
+                        <tr>
+                            <td  style="width: 300px" id="coords">
+                            <td style="width: 300px" id="vals">
+                    </table>
+                </div>
+            </div>
+            <div style="height: calc(100% - 20px); border: 1px solid rgba(66,79,130,1);border-radius: 6px;padding:4px;margin-top: 5px;margin-bottom:5px"  >
+                <div id="MaxLabel">max</div>
+                <div style="width: 20px;height:calc(100% - 50px)">
+                    <div id="ColorBar" style="height:100%"></div>
+                </div>          
+                <div id="MinLabel">min</div>
+            </div> 
+            <div id="toolBox"  ></div>       
+        </div>
+       
+        <!--<script type="module" src="js/mainApp.js" ></script>-->
+        <script type="module">
+            import{App} from "./js/mainApp.js";
+            var app = new App();
+        </script>
+        
+        
+        <!--<script type="module" src="OpenRayCaster/lib.js/inflate.min.js"></script>-->
+        
+<!--        <script type="module" >
+            import * as Zlib from "./OpenRayCaster/lib.js/inflate.min.js";
+        </script>-->
+        
+    </body>
+</html>

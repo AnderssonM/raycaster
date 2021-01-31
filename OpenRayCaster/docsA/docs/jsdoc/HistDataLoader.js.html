@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Loaders/HistDataLoader.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Loaders/HistDataLoader.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>from("../AdvancedRayCaster/js/Loaders/HistDataLib").import("HistLoader.js");
+from("../OpenRayCaster/js").import("MissingMath.js");
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * @constructor
+ * @param {type} volumeData
+ * @returns {HistDataLoader}
+ */
+function HistDataLoader(volumeData) {
+
+    HistogramLoader.call(this);
+    this.onError = function (mess, color) {
+        console.error("VolumeData:err:" + mess);
+    };
+    this.volumeData = volumeData;
+
+    //console.log("HistDataLoader constructor end",this);
+}
+
+HistDataLoader.prototype = Object.create(HistogramLoader.prototype);
+
+/**
+ * load, data loading method, binds onsuccess handler and calls loadFile of 
+ * super class HistogramLoader.
+ * @param {type} URL
+ * @returns {undefined}
+ */
+HistDataLoader.prototype.load = function (URL) {
+    this.onSuccess = this.afterDone.bind(this);
+    this.loadFile(URL);
+};
+/**
+ * afterDone, eventhandler for actions to perform after the histogram file has
+ * loaded.
+ * @param {type} header
+ * @param {type} hists
+ * @returns {undefined}
+ */
+HistDataLoader.prototype.afterDone = function (header, hists) {
+
+    console.log("HistDataLoader: loadHistogramSuccess");
+    this.Hist3D = this.hists[1];
+    var width = MissingMath.nextPow2(this.Hist3D.numBinsX);
+    var height = MissingMath.nextPow2(this.Hist3D.numBinsY);
+    var depth = MissingMath.nextPow2(this.Hist3D.numBinsT);
+
+    var offset_x = 0;// Math.round((width - this.Hist3D.numBinsX) / 2);
+    var offset_y = 0;// Math.round((height - this.Hist3D.numBinsY) / 2);
+    var offset_z = 0;// Math.round((depth - this.Hist3D.numBinsT) / 2);
+    var gf = MissingMath.greatestFactors(depth);
+
+    this.volumeData.setDimensions(width, height, depth, gf.high, gf.low);
+    this.volumeData.maxVal = this.Hist3D.max;
+    this.volumeData.minVal = this.Hist3D.min;
+    this.volumeData.avgVal = this.Hist3D.total / (this.Hist3D.numBinsX * this.Hist3D.numBinsY * this.Hist3D.numBinsT);
+    this.volumeData.sumVal = this.Hist3D.total;
+    var mul = this.volumeData.sampleRangeMax / this.volumeData.maxVal;
+    console.log("VolumeData Hist3D (max,avg,total)", this.Hist3D.max, this.Hist3D.avg, this.Hist3D.total);
+    //this.values['image'].data.set(this.Hist3D._data);
+
+
+    var i = 0;
+    var si, di;
+    this.volumeData.values['flipY'] = false;
+    for (var z = 0; z &lt; this.Hist3D.numBinsT; z++) {
+        for (var y = 0; y &lt; this.Hist3D.numBinsY; y++) {
+            for (var x = 0; x &lt; this.Hist3D.numBinsX; x++) {
+                di = this.volumeData.getAddress(offset_x + x, offset_y + y, offset_z + z);
+                si = x + ((this.Hist3D.numBinsY - y) * this.Hist3D.numBinsX) + (z * this.Hist3D.numBinsXY);
+                this.volumeData.values['image']['data'][ di ] = Math.min(Math.round(this.Hist3D._data[si] * mul), this.volumeData.sampleRangeMax);
+                if (z &lt; this.Hist3D.numBinsT - 1) {
+                    si = x + ((this.Hist3D.numBinsY - y) * this.Hist3D.numBinsX) + ((z + 1) * this.Hist3D.numBinsXY);
+                    this.volumeData.values['image']['data'][ di + 1] = Math.min(Math.round(this.Hist3D._data[si] * mul), this.volumeData.sampleRangeMax);
+                }
+                
+            }
+        }
+    }
+
+
+    this.volumeData.values['needsUpdate'] = true;
+    this.volumeData.onLoadSuccess();
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="AdvancedRayCaster.html">AdvancedRayCaster</a></li><li><a href="AdvancedVolumeData.html">AdvancedVolumeData</a></li><li><a href="HistAxis.html">HistAxis</a></li><li><a href="HistDataLoader.html">HistDataLoader</a></li><li><a href="HistHeader.html">HistHeader</a></li><li><a href="Histogram.html">Histogram</a></li><li><a href="HistogramLoader.html">HistogramLoader</a></li><li><a href="PointCloudData.html">PointCloudData</a></li><li><a href="RecipDataLoader.html">RecipDataLoader</a></li><li><a href="TestHarness.html">TestHarness</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertBinaryToArray">convertBinaryToArray</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu May 21 2015 17:03:45 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

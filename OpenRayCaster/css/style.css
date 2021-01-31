@@ -1,0 +1,170 @@
+/**
+* RayCaster
+* A web based program for ray traced rendering of volumetric data.
+* @author Martin Andersson, V.I.C, 2015. All rights reserved
+**/               
+  
+body, html {
+    height: 100%;
+    padding: 0px;
+    margin: 0px;
+    margin: 0px;
+    overflow: hidden;
+
+}
+body {
+    color: #ffffff;
+    font-family:Monospace;
+    font-size:13px;
+    text-align:center;
+    font-weight: bold;
+    background-color: #212121;
+    display: flex;
+    flex-flow: column;
+
+}
+a {
+
+    color: #ffffff;
+}
+.close-button{
+    display:none;
+}
+.folder{
+    border: 1px solid rgba(66,79,130,1) !important;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    padding-top: 4px !important;
+    padding-bottom: 0px;
+    background-color: black !important;
+
+}
+.button{
+    border-radius: 4px;
+    margin: 4px;
+    height: 16px;
+    background-color: grey;
+}
+.button:hover{
+    background-color: lightgray;
+}
+
+#info {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 5px;
+}
+#stats {
+    border : 1px solid grey;
+    min-width: 160px;
+    padding-left: 6px;
+    margin-left: 20px;
+}
+
+#fpsGraph {
+    min-width: 148px;
+}
+#fpsGraph span {
+    min-width: 2px;
+
+}
+
+#msGraph {
+    min-width: 148px;
+}
+#msGraph span {
+    min-width: 2px;
+
+}
+#cmCanvas{
+    border: 1px solid grey;
+    border-radius: 2px;
+    max-width: 20px;
+    height: 100%;
+/*    height:14px;
+    width: 200px;*/
+} 
+#container {
+    height: 100%;
+    display: flex;
+    flex-flow: colum ;
+    justify-content: center;
+    align-content: center;
+    align-items: stretch;
+    border: 1px solid black;
+    box-sizing: border-box;
+}
+
+#container > #toolBox {
+    flex:  0 0 250px;
+    align-self: auto ;
+    min-width: 0 ;
+    min-height: auto;
+    margin: 5px;
+    overflow-y: hidden;
+}
+#container > #canvasBox {
+    display: flex;
+    flex-flow: column ;
+    flex:  3 1 auto;
+    align-self: auto ;
+    min-width: 0 ;
+    min-height: auto;
+    border: 1px solid grey;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 4px;
+    background-color: black;
+    border: 1px solid rgba(66,79,130,1);
+    overflow: hidden;
+}
+#canvasBox > #canvas{
+    /*margin: 4px;*/
+    flex: 1 1 auto;
+    align-content: stretch;
+    min-width: 99%;
+    min-height: 99%;
+    max-width:  99%;
+    max-height: 99%;
+    box-sizing: border-box;
+    /*border: 1px solid grey;*/
+    height: 100%;
+
+}
+#header, #footer{
+    flex: 0 1 auto;
+    font-family: 'Lucida Grande', sans-serif;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 2px;
+    text-align: center;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.004);
+    font-smoothing: antialiased;
+    vertical-align: middle;
+    padding-bottom: 6px;
+    background: linear-gradient(to right,
+        rgba(48,53,92,0.5) 0%,
+        rgba(48,53,92,0.8) 3%,
+        rgba(48,53,92,1) 5%,
+        rgba(48,53,92,1) 8%,
+        rgba(66,79,130,1) 20%,
+        rgba(48,53,92,1) 30%,
+        rgba(48,53,92,1) 61%,
+        rgba(48,53,92,0.8) 85%,
+        rgba(48,53,92,0.5) 100%); 
+}
+
+.c > input, .c > select {
+    min-width:  120px;
+    max-width:  120px;
+    width: 120px;
+    
+}
+

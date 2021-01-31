@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link rel="stylesheet" href="css/docStyle.css">
+        <title>RayCaster Libary - Open Version</title>
+    </head>
+    <body>
+        <h2 style="margin-bottom: 0px;padding-bottom: 0px">RayCaster Libary</h2>
+        <p style="margin-top: 2px;padding-top:  0px; font-weight: bold;"> Open Version<p>
+
+        <p>
+            RayCaster is a ray tracing volume rendering program implemented for the browser in WebGL/HTML/JavaScript.
+            RayCaster loads binary volumetric data formats, and performs a 3 pass volumetric render.           
+        </p>
+
+
+        <h3>Features</h3>
+        <ul> 
+            <li>Loads multiple formats (more formats available in closed version)</li>
+            <li>Multiple predefined ColorMaps</li>
+            <li>Color Map scaling</li>
+            <li>Four different composition/integration modes</li>
+            <li>Three different surface modes</li>
+            <li>Filtering function</li>
+        </ul>       
+
+        <h3>RayCaster API Usage </h3>
+
+        <ol>
+            <li><a href="./docs/tutorials/tutorial.html" > View tutorials </a></li>
+            <li><a href="./docs/jsdoc/index.html" > View auto generated documentation </a></li>
+        </ol>
+
+
+        <h3>RayCaster API test suite</h3>
+        <a href="./testHarness.html" > Open test suite</a>
+
+        <h3>RayCaster Download</h3>
+        <a href="../OpenRayCaster.zip" > Download Latest version</a>
+
+
+        <canvas id="rayCanvas" width="640" height="640" style="background-color: gray;"></canvas>
+        <script type="module">
+            
+            import {OpenRayCaster, default_settings} from './js/OpenRayCaster.js';
+            import {CameraCrew } from './js/CameraCrew.js';
+            var options=default_settings;
+           
+          var canvas_element = document.getElementById("rayCanvas");
+//           options.renderTarget=canvas_element;
+        
+	window.rayCaster = new OpenRayCaster(options);
+        
+	function loadCompleteCallback(){
+	    console.log("Data loaded");
+	}
+        window.rayCaster.debugCanvas=canvas_element;
+	rayCaster.loadDataFile('/OpenRayCaster/sampleData/logo2.4x8.png',loadCompleteCallback);	
+        
+        </script>
+    </body>
+</html>

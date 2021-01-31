@@ -1,0 +1,53 @@
+/* 
+    Created on : Apr 1, 2015, 4:45:59 PM
+    Author     : Martin
+*/
+body{
+
+
+}
+h1{
+    font-size: 2.2em;
+    margin-bottom: 4px;
+
+}
+h2{
+    padding-left: 1em; background-color:#D0DEEF; margin-top: 2px;padding-top:  0px; font-weight: bold; 
+    font-size: 1em;
+}
+p{
+
+}
+body{
+    margin: 50px;
+    width: 750px;
+    background-color: #E0EEFF;
+}
+h1,  h3{
+    font-family: sans-serif;
+}
+strong{
+    font-family: sans-serif;
+    font-size: large;
+}
+pre{
+    font-family: serif, monospace;
+    font-weight: bold !important;
+    border-top: 1px solid lightsteelblue;
+    border-bottom: 1px solid lightsteelblue;
+    color: darkslateblue;
+    background: lightgrey;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 700px;
+    overflow-wrap: break-word;
+}
+
+
+li {
+    font-weight: bold;
+}
+li> *{
+    font-weight: normal;
+}

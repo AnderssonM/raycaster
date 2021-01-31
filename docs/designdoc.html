@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>designdoc</title>
+<style type="text/css">/*...*/</style>
+</head>
+<body>
+<h1>Design Document</h1><h2>Background</h2><p>After evaluating some other techniques, such as splatting and marching cubes,  I finally settled on Raycasting as the most feasible method for being able to reproduce good images from a variety of volume data types in a browser-based software. Working within the constraints of a modern browser with no plugins, the program is based on HTML5, JavaScript (ECMA 5) and WebGL 1.0.</p><h2>Constraints</h2><p>Working with WebGL 1.0, which is based on Open GLES 2.0, means only a subset of the full Open GL spec is available. This means that some tricks have to be used to emulate 3D textures, which does not exist in WebGL 1.0. </p><h2>Tech. Design</h2>
+<ol>
+  <li><p><strong>Data Texture Layout</strong></p><p>Volume data is loaded and transfered to the shader as a <em>data texture</em>. Each slice  located after each other on the bitmap. Such that a volume with <em>voxel</em> dimensions  x:64,y:64,z:64, in the simplest form will create a texture with <em>pxiel</em> dimensions  (x:64, y:64*64). </p>
+  <pre><code>    -----
+    |z1 |
+    -----
+    |z2 |
+    -----
+    |z3 |
+    -----
+    |z..|
+</code></pre><p>Since it is possible that some browsers will not allow textures with sides larger than 4096 pixels, it is necessary to also allow the following layout of slices.</p>
+  <pre><code>    ---------
+    |z1|z5|z..
+    -------
+    |z2|z6|
+    -------
+    |z3|z7|
+    -------
+    |z4|z8|
+    ---------
+</code></pre><p>As volume rendering will have to access this data very frequently, an <em>index texture</em> is also created containing the <em>data texure</em> [x,y] <em>texel</em> offsets  for each z slice encoded as [r,g]. </p><p>(Additionally, for optimization purposes, the <em>index texture</em> values [b,a] contains the offset for slice z+1.)</p></li>
+  <li><p><strong>Volume Geometry</strong></p><p>The volume geometry consists of a unit cube (with a side of 1). As the cube gets rendered, its vertices are multiplied by the view matrix and the model matrix causing each vertex to be displaced based on rotation and perspective. </p><p>The first step of a simple rendering of this cube would normally be passing these vertices to a <em>vertex shader</em> doing this matrix multiplication which then  passes the resulting x:y screen coordinates to the <em>fragment shader</em>.</p><p>The <em>fragment_shader</em> then colors each pixel of a triangle made up of every three vertices being passed. The coordinates and any other vertex attribute passed from the <em>vertex_shader</em> is automatically interpolated for each pixel within each triangle to be drawn.</p></li>
+  <li><p><strong>Ray Casting</strong></p><p>Ray Casting complicates this process significantly as we are no longer drawing 3D objects on the screen, but rather evaluate each pixel location on the screen to find what volume data is behind it. This would be simple enough if we didn't need to consider rotation and perspective but since we do, we need to cast a <em>ray</em> from each pixel through the transformed (rotation, scale, perspective) volume and figure out which <em>voxels</em> the ray traverses. </p><p>So we need to draw a square based on two triangles representing the <em>view port</em> (or window), such as:</p>
+  <pre><code>    ______
+    |   /|
+    |  / |
+    | /  |
+    |/___|
+</code></pre><p>To further complicate things, the <em>vertex shader</em> is only aware of the coordinates and attributes of the single vertex currently being processed. While the <em>fragment shader</em> is only aware of the interpolated coordinate and attribute values for the current pixel being drawn. </p><p>3.1 <strong>Ray origin and end points.</strong></p><p>So with all the complications listed above, we need to find the start and end points (in data <em>voxel</em> coordinates) for the ray behind each screen pixel. The way we achieve this is by first rendering the back-face of the hidden surfaces of the volume geometry. (Think of back faces as the insides of each of the cube  faces, and think of the hidden surfaces as the faces of the cube which are hidden on the back side of the cube).</p><p>So we render the three hidden faces but instead of giving them a normal color we use the color information to encode the <em>voxel coordinate</em> for each pixel such that [r,g,b,a] equals [x,y,z,w] and then store this rendered view in a texture called <em>back_end_coordinates</em>. </p><p>Next we repeat the procedure with the front-face of the three visible  surfaces of the cube and again encode the corresponding <em>voxel coordinates</em>, and store the resulting texture as <em>front_end_coordinates</em>.</p><p>Both of these textures are rendered in the size of the <em>view port</em></p><p>3.2 <strong>Voxel Coordinate lookup</strong></p><p>Now we can render our square <em>view port</em>, and for each x:y screen pixel, the <em>fragment shader</em> can lookup the corresponding color values in <em>front_end_coordinates</em> and <em>back_end_coordinates</em>. The transformed [x,y,z] coordinates for the ray start and end can now be found in the [r,g,b] color values of each x:y screen pixel.</p><p>3.3 <strong>Data Texture coordinate lookup</strong></p><p>The fragment shader can now calculate the length of the ray and iterate over the voxel coordinates of each depth sample along the path. The <em>fragment shader</em> looks up the corresponding <em>data texture</em> offset for the voxel z coordinate and finally looks up the <em>data texture</em> value at the offset + voxel xy coordinate.</p><p>This is repeated for each depth sample, and the integrated value is returned based on the selected composition mode.</p></li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>api_use_1.1</title>
+<link rel="stylesheet" href="docStyle.css">
+</head>
+<body>
+<h1>RayCaster API usage</h1><h2>Scene and volume setup</h2><p>A small guide to exploring the options using the provided sample data.</p>
+<ol>
+  <li><p><strong>Canvas creation</strong></p><p>First we create must create a canvas for RayCaster to draw on</p>
+  <pre><code> &lt;canvas id=&quot;rayCanvas&quot; style=&quot;height:300px; width:300px; background: grey&quot; &gt; &lt;/canvas&gt;
+</code></pre><p>Which gives us this</p><p><canvas id="rayCanvasGr" style="height:300px; width:300px; background: grey" ></canvas></p></li>
+  <li><p><strong>Scene creation</strong></p><p>Once we have a canvas we include the supporting libraries from the 'lib.js' file, which is a bundle of THREE.js and some other external libraries that we will need.<br/>Next we need to do a bit of THREE.js setup to create a Scene, and a WebGLRenderer.</p>
+  <pre><code>&lt;script src=&quot;js/lib.js&quot; &gt;  &lt;/script&gt;
+&lt;script&gt;
+    var canvas_element = document.getElementById(&quot;rayCanvas&quot;);
+    var renderer = new THREE.WebGLRenderer({canvas: canvas_element});
+    var scene = new THREE.Scene();
+&lt;/script&gt;
+</code></pre><p>The canvas element will turn black at this point, the default background of a THREE.js renderer.</p><p><canvas id="rayCanvasb" style="height:300px; width:300px; background: black" ></canvas></p></li>
+  <li><p><strong>Include RayCaster</strong></p><p>Next we include the the rayCaster library, using a new script tag.</p>
+  <pre><code>&lt;script src=&quot;js/RayCaster.js&quot; &gt;  &lt;/script&gt;  
+</code></pre></li>
+  <li><p><strong>Set up a CameraCrew</strong></p><p>Now that we have a complete scene and a renderer, we can set our scene and render options and create a CameraCrew instance.</p>
+  <pre><code>&lt;script&gt;
+    var options = default_options;
+    options.scene = scene;
+    options.renderer = renderer;
+&lt;/script&gt;
+</code></pre></li>
+  <li><p><strong>Create a RayCaster volume</strong> </p><p>After that we create a RayCaster instance, passing the options to the constructor. Then we add the RayCaster instance to the scene.</p>
+  <pre><code>rayCaster = new RayCaster(options);
+scene.add(rayCaster.pixelVolume);
+rayCaster.loadDataFile(&#39;../../../data/logo2.4x8.png&#39;);   
+</code></pre></li>
+  <li><p><strong>Load a Data File</strong></p><p>And now we are ready to load a data file. Which gives us the following result.</p><p><canvas id="rayCanvas" style="height:300px; width:300px; background: grey" ></canvas></p><p><strong><em>Full code for this exercise.</em></strong> </p>
+  <pre><code>&lt;!DOCTYPE html&gt; 
+&lt;html&gt; 
+&lt;body&gt; 
+    &lt;script src=&quot;js/lib.js&quot; &gt;  &lt;/script&gt;
+    &lt;script src=&quot;js/RayCaster.js&quot; &gt;  &lt;/script&gt;
+
+    &lt;canvas id=&quot;rayCanvas&quot; style=&quot;height:300px; width:300px; background: grey&quot; &gt; &lt;/canvas&gt;
+
+    &lt;script&gt;
+        var canvas_element = document.getElementById(&quot;rayCanvas&quot;);
+        var renderer = new THREE.WebGLRenderer({canvas: canvas_element});
+        var scene = new THREE.Scene();
+
+        var options = default_options;
+        options.scene = scene;
+        options.renderer = renderer;
+
+        var  cameraCrew = new CameraCrew(options, canvas_element);
+
+        rayCaster = new RayCaster(options);
+        scene.add(rayCaster.pixelVolume);
+        rayCaster.loadDataFile(&#39;../../../data/logo2.4x8.png&#39;);    
+    &lt;/script&gt;   
+&lt;/body&gt; 
+&lt;/html&gt; 
+</code></pre></li>
+</ol>
+<p style="text-align:center"><a href="./api_use_1.2.html">Next></a></p>
+<script src="../../../js/lib.js"  ></script>
+<script src="../../../js/RayCaster.js"></script>
+<script>
+var canvas_element = document.getElementById("rayCanvas");
+var renderer = new THREE.WebGLRenderer({canvas: canvas_element});
+var scene = new THREE.Scene();
+var options = default_options;
+options.scene = scene;
+options.renderer = renderer;
+options['URLroot']="../../../";
+var  cameraCrew = new CameraCrew(options, canvas_element);
+rayCaster = new RayCaster(options);
+scene.add(rayCaster.pixelVolume);
+rayCaster.loadDataFile('../../../data/logo2.4x8.png');</script>
+</body>
+</html>

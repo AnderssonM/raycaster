@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!-- OpenRayCaster build file -->
+<project  basedir="." default="packShaders">
+    <property name="output" value="${basedir}/../js/RenderPass/ShaderCollection.js" />
+    <target name="packShaders">
+        <echo file="${output}" append="false">RenderPass.prototype.shaders = {</echo>
+        <antcall target="addShaderPair" >
+            <param name="shaderName" value="point_data" />
+        </antcall>
+        <antcall target="addShaderPair" >
+            <param name="shaderName" value="point_project"/>
+        </antcall>
+        <antcall target="addShaderPair" >
+            <param name="shaderName" value="vol_data"/>
+        </antcall>
+        <antcall target="addShaderPair" >
+            <param name="shaderName" value="vol_egress"/>
+        </antcall>
+        <antcall target="addShaderPair" >
+            <param name="shaderName" value="vol_ingress"/>
+        </antcall>
+
+    
+        <echo file="${output}" append="true">};</echo>
+        <echo file="${output}" append="true">
+        RenderPass.prototype.__transmograf = 
+        "#define _c const \n #define _fc gl_FragColor \n#define _vr varying \n #define _uf uniform \n #define _hp highp\n #define _v2 vec2\n #define _v3 vec3\n #define _v4 vec4\n #define _f float\n #define _i int\n #define _SC ;\n #define _LB {\n #define _RB }\n #define _LP (\n #define _RP )\n #define _FL for \n";
+        </echo>
+    </target>
+    <target name="addShaderPair" >
+        <antcall target="addShader" >
+            <param name="shaderName" value="${shaderName}_vert"/>
+        </antcall>
+        <antcall target="addShader" >
+            <param name="shaderName" value="${shaderName}_frag"/>
+        </antcall>
+    </target>
+    <target name="addShader">
+        <echo>${shaderName} </echo>
+        <echo file="${output}" append="true">${shaderName}:"</echo>
+        <concat destfile="${output}" append="true">
+            <fileset file="${basedir}/${shaderName}.glsl" />
+            <filterchain>
+                <replaceregex pattern="^[\s | \t]*" replace="" />
+                <striplinecomments>
+                    <comment value="//"/>
+                    <comment value="/**"/>
+                    <comment value="*"/>
+                </striplinecomments>
+                <replacestring from="gl_FragColor" to="_fc" />
+                <replacestring from="varying" to="_vr" />
+                <replacestring from="uniform" to="_uf" />
+                <replacestring from="const" to="_c" />
+                <replacestring from="highp" to="_hp" />
+                <replacestring from="vec" to="_v" />
+                <replacestring from="float" to="_f" />
+                <replacestring from="int" to="_i" />
+                <replacestring from=";" to=" _SC " />
+                <replacestring from="{" to=" _LB " />
+                <replacestring from="}" to=" _RB " />
+                <replacestring from="(" to=" _LP " />
+                <replacestring from=")" to=" _RP " />
+                <!--<replacestring from="for" to=" _FL " />-->
+                <replacestring from="&quot;" to="\&quot;" />
+                <replaceregex pattern="^(.*)//.*" replace="\1" />
+                <replaceregex pattern="^#(.*)" replace="\\\\n #\1 \\\\n" />
+                
+                <striplinebreaks />
+            </filterchain>
+        </concat>     
+        <echo file="${output}" append="true"> ",        
+        </echo> 
+    </target>
+</project>

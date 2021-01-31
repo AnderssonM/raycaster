@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- JSDOCS build file -->
+<project name="jsdocs" basedir="." default="buildJSDocs">
+    <target name="buildJSDocs">
+        <echo >JSDOCS ${basedir}\..\js
+            => ${basedir}\jsdoc </echo>
+
+        <exec  executable="jsdoc.cmd"  resolveexecutable="true"  searchpath="true" dir="${basedir}" spawn="false">
+            <arg value="-p"/>
+            <arg value="-r"/>
+            <arg value="-d"/>
+            <arg value="jsdoc"/>
+            <arg value="../js/"/>
+        </exec>
+    </target>
+    
+    
+</project>

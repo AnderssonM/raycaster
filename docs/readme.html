@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Readme</title>
+<style type="text/css">/*...*/</style>
+</head>
+<body>
+<h1>Web GL Raycasting volume viewer manual</h1><h2>GUI usage</h2><p>The web user interface contains a 3D view panel to the left, and a tool panel to the right. The 3D view panel will show a 3D ray-casted rendering of the volume based on the parameters in the tool panel. The tool panels boxes can be opened and closed by clicking the header area of each box.</p>
+<ol>
+  <li><p><strong>Load a data file.</strong></p><p>To load a data file use the <em>'Load Data'</em> panel to select a data file. The files are divided into groups based on the formats that program is able to use for input - png, jpeg, vol and hst. Additionally Chrome is able to use webp files for input. The webp format greatly reduces the size of the data files that are transfered to the users browser.</p></li>
+  <li><p><strong>Select a color map.</strong></p><p>There are a number of predefined colormaps to chose from in a drop down selection-box. Click on the 'Color Map' too box title or the color bar to to display the selection.</p>
+  <ul>
+    <li><em>Gray Scale</em></li>
+    <li><em>Heat wave</em></li>
+    <li><em>Frozen</em></li>
+    <li><em>Froggy</em></li>
+    <li><em>Starry Night</em></li>
+    <li><em>Custom</em></li>
+  </ul><p>The custom setting, allows the user to create a custom map with color stops.</p></li>
+  <li><p><strong>Adjust Display Settings.</strong></p><p>3.1. Intensity</p><p>Use the intensity control to adjust the 'brightness' of the image. This intensity setting basically works as a multiplier that gets applied to the data value before comparison against the color map. Default value is one.</p><p>3.2. Composition</p><p>The composition mode decides how the value of each pixel is integrated. A ray casting volume renderer works by 'casting a ray' from each pixel through the volume-data. The ray will will sample the data at regular intervals and the composition mode determines how these values are treated.</p><p>There are four different composition modes available. </p>
+  <ul>
+    <li><em>Average</em> - Each value is added to a sum, and divided by sample number</li>
+    <li><em>Max Intensity</em> - Finds the highest sample value along the ray.</li>
+    <li><em>(1-Src) * Dst</em> - Src is sample, Dst is the value calculated last.</li>
+    <li><em>Gamma</em> - Experimental logarithmic gamma control.</li>
+  </ul><p>You probably want to use the <em>Average</em> or <em>Max Intensity</em> setting.</p><p>3.3. Camera</p><p>There are two different camera modes available.</p>
+  <ul>
+    <li><em>Perspective</em></li>
+    <li><em>Orthographic</em></li>
+  </ul><p>Pretty self explanatory.</p></li>
+  <li><p><strong>Interpolation</strong></p><p>There are two different interpolation controls. The first determines which type of interpolation is used for the data in the X and Y dimensions.  The second one determines which interpolation mode is to be used for the Z dimension. </p></li>
+  <li><p><strong>Slicing</strong></p><p>Rudimentary slicing controls, can be used to slice the volume in its X,Y and Z dimensions. The slice start and thickness in relative coordinates (0.00 - 1.00) can be controlled for each dimension.</p></li>
+  <li><p><strong>Surface detection</strong></p><p>If the <em>Src</em> mode is used, samples between the <em>Min</em> and <em>Max</em> limit will cause further ray marching for the pixel to be aborted at the current depth and and the current depth <em>Src</em> value is returned.</p><p>If the <em>ISO</em> mode is used, samples between the <em>Min</em> and <em>Max</em> limit will cause further ray marching for the pixel to be aborted at the current depth and and the current depth <em>Min</em> value is returned.</p><p>The pixel color will be calculated based on the colormap for the returned value, and mixed with the sum of the voxel values in front of the surface voxel. The mix ratio is set with the <em>'Plasma Level'</em> control.</p><p>Further on the pixel will be shaded or brightened based to the transformed image depth and factored by the _'Depth Shade' control value, to simulate a very simplistic 3D lighting model. </p></li>
+  <li><p><strong>Filtering</strong></p><p>If the <em>Filter</em> mode is used, samples with box sums less than <em>Limit</em> will be discarded. This can be used in conjunction with high <em>Intensity</em> levels to find peaks in histogram data. </p><p>If the <em>Mark</em> mode is set, samples with box sums greater than <em>Limit</em> will be marked by a bluish white. </p><p><strong>Warning:</strong> These options consume a lot of GPU cycles, and might cause the browser on slower systems to become unresponsive. </p></li>
+  <li><p><strong>Performance and Test</strong></p><p>The default view is showing a frame-rate graph, that can be used for performance monitoring. Clicking on the graph, switches mode to showing frame redraw times. Clicking outside the graph displays a number of experimental settings. </p><p>Almost all options here are without effect for the normal user. And better left as they are. But the <em>'DepthSamples'</em> can be used to trade image quality for performance.</p><p>A low <em>DepthSamples</em> can be used, to improve performance at the cost of quality on slow systems. Whereas a higher <em>DepthSamples</em> value will (possibly) improve image quality at the cost of performance.</p><p><em>Setting a too low <em>'DepthSamples'</em> value will result in a 'layered' look of the output image.</em></p></li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: AdvancedRayCaster.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: AdvancedRayCaster.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>from("!").import("AdvancedVolumeData.js", "PointCloudData.js");
+from("../OpenRayCaster/js").import("OpenRayCaster.js","VolumeGeometry.js", "ColorMap.js");
+from("../OpenRayCaster/js/RenderPass").import("VolumeEgressCoordinatePass.js", "VolumeIngressCoordinatePass.js", "RayTracingPass.js");
+
+
+/**
+ * AdvancedRayCaster class for ray traced rendering of volumetric data.
+ * This is the advanced (or closed version), based on the open version.
+ * @author Martin Andersson, V.I.C.
+ * @constructor
+ * @this {RayCaster}
+ * @argument {Gui.prototype.options} options option object
+ * 
+ **/
+function AdvancedRayCaster(options) {
+    OpenRayCaster.call(this,options);
+}
+AdvancedRayCaster.prototype = Object.create(OpenRayCaster.prototype);
+AdvancedRayCaster.prototype.VolumeDataType=AdvancedVolumeData;
+/**
+ * pixelToNormalizedVoxelCoordinates, get the norm pixel data for coordinates x,y
+ * @param {type} x
+ * @param {type} y
+ * @returns {undefined}
+ */
+AdvancedRayCaster.prototype.pixelToNormVoxelCoord = function (ctx,x,y){
+    var front= this.frontPass.readPixels(ctx,x,y);
+    var back= this.backPass.readPixels(ctx,x,y);
+//    var s= this.volumeData.getRayData(rs[0],rs[1],rs[2],re[0],re[1],re[2])
+    return  {front:front,back:back};
+    
+};
+
+/**
+ * getPixelData, get the pixel data for coordinates x,y
+ * @param {type} x
+ * @param {type} y
+ * @returns {undefined}
+ */
+AdvancedRayCaster.prototype.getPixelData = function (ctx){
+    var x=this.options['mouse']['x'];
+    var y=this.options['mouse']['y'];
+    
+    var front= this.frontPass.readPixels(ctx,x,y);
+    var back= this.backPass.readPixels(ctx,x,y);
+    var rFront=this.volumeData.NormCoordToRealCoord(front);
+    var rBack=this.volumeData.NormCoordToRealCoord(back);
+    var s= this.volumeData.getRayData(rFront,rBack);
+    return s;
+    
+};
+
+/**
+ * buildDataPassMaterial, builds the datapass and related material 
+ * @private
+ * @returns {undefined}
+ */
+AdvancedRayCaster.prototype.buildDataPassMaterial = function () {
+    console.log("RayCaster: Building Data Pass Material");
+    this.dataPass = new RayTracingPass(this.settings);
+    // This is not in open version
+    this.dataPass.createBuffer(new THREE.Vector2(200,200),false);
+    this.dataPass.updateDefines(this.settings);
+    this.pixelVolume = new THREE.Mesh(this.volumeGeometry, this.dataPass.material);
+    this['pixelVolume'] = this.pixelVolume;
+    this.scene.add(this.pixelVolume);
+    this.updateTextures();
+    this.updateUniforms();
+};
+/**
+ * renderToCanvas, renders current view  to canvas
+ * @returns {undefined}
+ **/
+AdvancedRayCaster.prototype.renderToCanvas = function (canvas,camera) {
+    var scene = this.options['scene'];
+    camera = camera|| this.options['camera'];
+    var renderer = this.options['renderer'];
+    this.frontPass.renderToBuffer(renderer, scene, camera);
+    this.backPass.renderToBuffer(renderer, scene, camera);
+    this.dataPass.renderToCanvas(renderer, scene, camera,canvas);
+    //var sum=this.frontPass.renderTime + this.backPass.renderTime + this.dataPass.renderTime;
+    // console.log(sum,this.frontPass.renderTime, this.backPass.renderTime, this.dataPass.renderTime);
+};
+
+// Closure Compiler exports
+window['AdvancedRayCaster'] = AdvancedRayCaster;
+AdvancedRayCaster.prototype['render'] = AdvancedRayCaster.prototype.render;
+AdvancedRayCaster.prototype['requestRender'] = AdvancedRayCaster.prototype.requestRender;
+AdvancedRayCaster.prototype['updateInterpolation'] = AdvancedRayCaster.prototype.updateInterpolation;
+AdvancedRayCaster.prototype['updateShader'] = AdvancedRayCaster.prototype.updateShader;
+AdvancedRayCaster.prototype['updateTextures'] = AdvancedRayCaster.prototype.updateTextures;
+AdvancedRayCaster.prototype['setSliceX'] = AdvancedRayCaster.prototype.setSliceX;
+AdvancedRayCaster.prototype['setSliceY'] = AdvancedRayCaster.prototype.setSliceY;
+AdvancedRayCaster.prototype['setSliceZ'] = AdvancedRayCaster.prototype.setSliceZ;
+AdvancedRayCaster.prototype['updateUniforms'] = AdvancedRayCaster.prototype.updateUniforms;
+AdvancedRayCaster.prototype['loadDataFile'] = AdvancedRayCaster.prototype.loadDataFile;
+AdvancedRayCaster.prototype['resize'] = AdvancedRayCaster.prototype.resize;
+AdvancedRayCaster.prototype['updateColorMap'] = AdvancedRayCaster.prototype.updateColorMap;
+//AdvancedRayCaster.prototype.pixelVolume = {};
+AdvancedRayCaster.prototype['pixelVolume'] = AdvancedRayCaster.prototype.pixelVolume;
+AdvancedRayCaster.prototype.resetScale = false;
+AdvancedRayCaster.prototype['resetScale'] = AdvancedRayCaster.prototype.resetScale;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="AdvancedRayCaster.html">AdvancedRayCaster</a></li><li><a href="AdvancedVolumeData.html">AdvancedVolumeData</a></li><li><a href="HistAxis.html">HistAxis</a></li><li><a href="HistDataLoader.html">HistDataLoader</a></li><li><a href="HistHeader.html">HistHeader</a></li><li><a href="Histogram.html">Histogram</a></li><li><a href="HistogramLoader.html">HistogramLoader</a></li><li><a href="PointCloudData.html">PointCloudData</a></li><li><a href="RecipDataLoader.html">RecipDataLoader</a></li><li><a href="TestHarness.html">TestHarness</a></li></ul><h3>Global</h3><ul><li><a href="global.html#convertBinaryToArray">convertBinaryToArray</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu May 21 2015 17:03:45 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

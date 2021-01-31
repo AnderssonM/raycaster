@@ -1,0 +1,14 @@
+{
+"info":"NRRD0004 # Complete NRRD file format specification at:# http://teem.sourceforge.net/nrrd/format.html",
+"type": "uint8",
+"dimension": 3,
+"space": "left-posterior-superior",
+"sizes": [64, 64, 64],
+"space directions": [[1,0,0], [0,1,0] ,[0,0,1]],
+"kinds": "domain domain domain",
+"endian": "little",
+"encoding": "raw",
+"space origin": [-32.0,-32.0,-32.0],
+"data file": "fuel_64x64x64_uint8.raw"
+    
+}

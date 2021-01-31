@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib.depend.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: lib.depend.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>
+// Above line is used to identify this script to it self.
+/**
+ * @module dependency
+ */
+var own_name = "lib.depend.js";
+var js_lib = "/lib.js";
+var js_root = "/js";
+var root = "/";
+var shader_root = "/shaders";
+var parent = "root-script";
+var modules = {};
+var all_scripts = [];
+var lib_scripts = [];
+var src_scripts = [];
+var concat_src = "";
+var concat_libs = "";
+var console.log = function () {
+    console.log(console, arguments)
+};
+/**
+ * Simple JavaScript Dependency Injector
+ * @author Martin Andersson, V.I.C. 2014
+ */
+var from = function () {
+    var args = Array.prototype.slice.call(arguments);
+    var path = args.join("/");
+    var newpath;
+    if (path.substr(0, 4) == "http") {
+        newpath = path;
+    }
+    else if (path.charAt(0) == ".") {
+        newpath = path;
+    }
+    else if (path.charAt(0) == "/") {
+        newpath = path;
+    }
+    else if (path.charAt(0) == "!") {
+        newpath = (include.from || "") + "/" + path.substring(1);
+    }
+    else {
+        newpath = (include.from || "") + "/" + path;
+    }
+    if (newpath.substr(newpath.length - 1) == '/') {
+        newpath = newpath.substr(0, newpath.length - 1);
+    }
+    modules[newpath] = [];
+    include.from = newpath;
+    return {import: include};
+};
+/**
+ *  Include 
+ *  @param  {String} path the full URL of the script to include
+ */
+var include = function () {
+    var args = Array.prototype.slice.call(arguments, 0);
+    var includepath = include.from || "";
+    for (var f = 0; f &lt; arguments.length; f++) {
+        var file = arguments[f];
+        var filepath = includepath + "/" + file;
+        if (all_scripts.indexOf(filepath) === -1) {
+            all_scripts.push(filepath);
+            var script = document.createElement("script");
+            script.text += loadDependency(filepath);
+            document.body.appendChild(script);
+            script.id = "dependency_" + includepath;
+            script.name = "dependency_" + includepath;
+            include.from = includepath;
+            modules[includepath].push(file)
+        }
+
+        else {
+            var index = all_scripts.indexOf(filepath);
+            all_scripts.splice(index, 1);
+            all_scripts.push(filepath);
+        }
+    }
+    parent = filepath;
+
+};
+
+//#include 
+/**
+ *  loadDependency  , creates async request and returns the responseText
+ * @param  {String} path the full URL of the script to include
+ * @returns {String}  The responseText
+ */
+loadDependency = function (path) {
+//     console.log("requesting:", path);
+    var request = new XMLHttpRequest();
+    request.open('GET', path, false);
+
+    try {
+        request.send(null);
+    }
+    catch (e) {
+        console.error("parent:", parent);
+        console.error("failed to load:", path);
+    }
+    if (!request.status === 200) {
+        throw ("Include fail:" + path + ":" + request.responseText.length);
+    }
+    var src = request.responseText + "\n//# sourceURL=" + path + "\n";
+    if (path.substr(0, js_root.length) == js_root) {
+        console.log("appending to build:", path);
+        concat_src = src + "\n" + concat_src;
+        src_scripts.push(path);
+    }
+    else {
+        console.log("appending to libs:", path);
+        concat_libs += src;
+    }
+
+    return src;
+};
+
+findTrueSelf = function () {
+    var scripts = document.body.getElementsByTagName("script");
+    console.log("sripts", scripts);
+    var onl = own_name.length;
+    for (var s = 0; s &lt; scripts.length; s++) {
+        var script_src = scripts[s].src;
+        var last_part = script_src.substr(script_src.length - onl, script_src.length);
+        var first_part = script_src.substr(0, script_src.length - onl);
+
+        if (last_part === own_name) {
+            console.log("script:", first_part, last_part, own_name);
+            js_root = first_part.substr(0, first_part.lastIndexOf('/'));
+            root = js_root.substr(0, js_root.lastIndexOf('/'));
+            js_lib = root + "/lib.js";
+            break;
+        }
+    }
+    console.log("js_root", js_root);
+    console.log("root", root);
+
+};
+
+getClosure = function () {
+    var src="";
+    var rev = Array.prototype.slice.call(all_scripts).reverse();
+    for (p in rev) {
+        if (rev[p].substr(0, js_root.length) == js_root) {
+            console.log(rev[p]);
+            var request = new XMLHttpRequest();
+            request.open('GET', rev[p], false);
+             request.send(null);
+             src+=request.response+"\n";
+        }
+    }
+    return src
+};
+
+findTrueSelf();</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-dependency.html">dependency</a></li></ul><h3>Classes</h3><ul><li><a href="CameraCrew.html">CameraCrew</a></li><li><a href="ColorMap.html">ColorMap</a></li><li><a href="GeneralDataLoader.html">GeneralDataLoader</a></li><li><a href="leaf.html">leaf</a></li><li><a href="NativeImageLoader.html">NativeImageLoader</a></li><li><a href="OpenRayCaster.html">OpenRayCaster</a></li><li><a href="OpenVolumeData.html">OpenVolumeData</a></li><li><a href="PointDataLoader.html">PointDataLoader</a></li><li><a href="RayTracingPass.html">RayTracingPass</a></li><li><a href="RenderPass.html">RenderPass</a></li><li><a href="TestHarness.html">TestHarness</a></li><li><a href="THREE.OrbitControls.html">OrbitControls</a></li><li><a href="VolDataLoader.html">VolDataLoader</a></li><li><a href="VolumeEgressCoordinatePass.html">VolumeEgressCoordinatePass</a></li><li><a href="VolumeGeometry.html">VolumeGeometry</a></li><li><a href="VolumeIngressCoordinatePass.html">VolumeIngressCoordinatePass</a></li></ul><h3>Namespaces</h3><ul><li><a href="Colormaps.html">Colormaps</a></li><li><a href="MissingMath.html">MissingMath</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue Sep 20 2016 13:34:34 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
