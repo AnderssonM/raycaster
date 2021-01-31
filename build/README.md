@@ -1,2 +1,2 @@
 # raycaster
- s
+ s gh-pages
