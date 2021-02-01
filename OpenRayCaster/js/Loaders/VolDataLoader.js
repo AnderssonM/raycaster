@@ -87,7 +87,7 @@ export class VolDataLoader extends GeneralDataLoader{
         var val;
 
         for (var i = 0; i < src_width * src_height * src_depth; i++) {
-            val = src[ i ]/256;
+            val = src[ i ];
             this.volumeData.maxVal = Math.max(this.volumeData.maxVal, val);
             this.volumeData.minVal = Math.min(this.volumeData.minVal, val);
             this.volumeData.sumVal += val;
@@ -105,8 +105,8 @@ export class VolDataLoader extends GeneralDataLoader{
             for (var y = 0; y < src_height; y++) {
                 for (var z = 0; z < src_depth; z++) {
                     di = this.volumeData.getAddress(offset_x + x, offset_y + y, offset_z + z);
-                    this.volumeData.values['image']['data'][ di ] = Math.floor(src[ si ] * mul  /256);
-                    this.volumeData.values['image']['data'][ di + 1] = Math.floor(src[ si + 1 ] * mul/256);
+                    this.volumeData.values['image']['data'][ di ] = Math.floor(src[ si ] * mul  );
+                    this.volumeData.values['image']['data'][ di + 1] = Math.floor(src[ si + 1 ] * mul);
                     si++;
                 }
             }
