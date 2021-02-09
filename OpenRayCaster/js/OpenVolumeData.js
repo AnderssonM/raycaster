@@ -3,10 +3,7 @@
 
 import {THREE} from '../lib.js/three.js';
 import {MissingMath} from './MissingMath.js';
-import {NativeImageLoader} from './Loaders/NativeImageLoader.js';
-import {GeneralDataLoader} from './Loaders/GeneralDataLoader.js';
-import {VolDataLoader} from './Loaders/VolDataLoader.js';
-import {PointDataLoader} from './Loaders/PointDataLoader.js';
+import * as DL from './Loaders/DataLoaders.js';
 
 export class OpenVolumeData {
 
@@ -14,7 +11,6 @@ export class OpenVolumeData {
      * OpenVolumeData, volume data class
      * @author Martin Andersson, V.I.C, 2015. All rights reserved
      * @constructor
-     * @argument {object} uniforms obsolete uniforms
      * 
      */
     constructor() {
@@ -124,25 +120,25 @@ export class OpenVolumeData {
 //        try {
             switch (ext) {
                 case 'vol':
-                    this.loader = new VolDataLoader(this);
+                    this.loader = new DL.VolDataLoader(this);
                     break;
-                         case 'json':
-                    this.loader = new VolDataLoader(this);
+                case 'json':
+                    this.loader = new DL.NRRDataLoader(this);
                     break;
                 case 'rec':
-                    this.loader = new RecipDataLoader(this);
+                    this.loader = new DL.RecipDataLoader(this);
                     break;
                 case 'hst':
-                    this.loader = new HistDataLoader(this);
+                    this.loader = new DL.HistDataLoader(this);
                     break;
                 case 'pcl':
-                    this.loader = new PointDataLoader(this);
+                    this.loader = new DL.PointDataLoader(this);
                     break;
                 case 'pcd':
-                    this.loader = new PointDataLoader(this);
+                    this.loader = new DL.PointDataLoader(this);
                     break;
                 default:
-                    this.loader = new NativeImageLoader(this);
+                    this.loader = new DL.NativeImageLoader(this);
                     break;
             }
 //        } 

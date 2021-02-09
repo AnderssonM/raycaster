@@ -3,8 +3,8 @@
 //from("../AdvancedRayCaster/js/Loaders").import("HistDataLoader.js");
 
 import {OpenVolumeData} from './OpenVolumeData.js';
-import {RecipDataLoader} from './Loaders/RecipDataLoader.js';
-import {HistDataLoader } from './Loaders/HistDataLoader.js';
+import {RecipDataLoader,HistDataLoader} from './Loaders/DataLoaders.js';
+
 
 export class AdvancedVolumeData extends OpenVolumeData {
     /**
