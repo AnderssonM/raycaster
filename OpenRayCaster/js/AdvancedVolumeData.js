@@ -5,7 +5,6 @@
 import {OpenVolumeData} from './OpenVolumeData.js';
 import {RecipDataLoader,HistDataLoader} from './Loaders/DataLoaders.js';
 
-
 export class AdvancedVolumeData extends OpenVolumeData {
     /**
      * VolumeData, volume data class

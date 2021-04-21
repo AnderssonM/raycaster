@@ -61,14 +61,10 @@ export class RayCasterGUI {
         html += "<option value='./OpenRayCaster/sampleData/Hydrogen.json'>Hydrogen</option>";    
         html += "<option value='./OpenRayCaster/sampleData/fuel_64x64x64_uint8.json'>fuel_64x64x64_uint8</option>";    
         html += "<option value='./OpenRayCaster/sampleData/mrt_angio_416x512x112_uint16.json'>mrt_angio_416x512x112_uint16</option>";    
-        html += "<option value='./OpenRayCaster/sampleData/stag_beetle_832x832x494_uint16.json'>stag_beetle_832x832x494_uint16</option>";    
+//        html += "<option value='./OpenRayCaster/sampleData/stag_beetle_832x832x494_uint16.json'>stag_beetle_832x832x494_uint16</option>";    
         
         html += "</optgroup>";
-//        html += "<optgroup label = 'REC data' >";
-//        html += "<option value='./data/hkl2.rec'>hkl2.rec</option>";
-//        html += "<option value='./data/hkl5.rec'>hkl5.rec</option>";
-//        html += "<option value='./data/hkl10.rec'>hkl10.rec</option>";
-//        html += "</optgroup>";
+
         html += "<optgroup label = 'PNG data' >";
         html += "<option selected value='./data/logo2.4x8.png'>VIC Logo</option>";
         html += "<option value='./data/KEKlogo.1x8.png'>KEK Logo</option>";
@@ -92,38 +88,6 @@ export class RayCasterGUI {
         html += "<option value='./data/hist-04_lossy.1x128.webp' >Histogram 04</option>";
         html += "</optgroup>";
 
-//        html += "<optgroup label = 'HST data' >";
-//        html += "<option value='./data/hist-1.hst' >Histogram 01</option>";
-//        html += "<option value='./data/hist-2.hst' >Histogram 02</option>";
-//        html += "<option value='./data/hist-3.hst' >Histogram 03</option>";
-//        html += "<option value='./data/hist-4.hst' >Histogram 04</option>";
-//        html += "<option value='./data/hist-5.hst' >Histogram 05</option>";
-//        html += "<option value='./data/hist-6.hst' >Histogram 06</option>";
-//        html += "<option value='./data/hist-7.hst' >Histogram 07</option>";
-//        html += "<option value='./data/hist-8.hst' >Histogram 08</option>";
-//        html += "<option value='./data/hist-9.hst' >Histogram 09</option>";
-//        html += "<option value='./data/hist-10.hst' >Histogram 10</option>";
-//        html += "<option value='./data/hist-11.hst' >Histogram 11</option>";
-//        html += "<option value='./data/hist-12.hst' >Histogram 12</option>";
-//        html += "<option value='./data/hist-13.hst' >Histogram 13</option>";
-//        html += "<option value='./data/hist-14.hst' >Histogram 14</option>";
-//        html += "<option value='./data/hist-15.hst' >Histogram 15</option>";
-//        html += "<option value='./data/hist-16.hst' >Histogram 16</option>";
-//        html += "<option value='./data/hist-17.hst' >Histogram 17</option>";
-//        html += "<option value='./data/hist-18.hst' >Histogram 18</option>";
-//        html += "<option value='./data/hist-19.hst' >Histogram 19</option>";
-//        html += "<option value='./data/hist-20.hst' >Histogram 20</option>";
-//        html += "<option value='./data/hist-21.hst' >Histogram 21</option>";
-//        html += "<option value='./data/hist-22.hst' >Histogram 22</option>";
-//        html += "<option value='./data/hist-23.hst' >Histogram 23</option>";
-//        html += "<option value='./data/hist-24.hst' >Histogram 24</option>";
-//        html += "<option value='./data/hist-25.hst' >Histogram 25</option>";
-//        html += "<option value='./data/hist-26.hst' >Histogram 26</option>";
-//        html += "<option value='./data/hist-27.hst' >Histogram 27</option>";
-//        html += "<option value='./data/hist-28.hst' >Histogram 28</option>";
-//        html += "<option value='./data/hist-29.hst' >Histogram 29</option>";
-//        html += "<option value='./data/hist-30.hst' >Histogram 30</option>";
-//        html += "</optgroup>";
 
         // this.resampleButton = this.dataFolder.add(this, 'resampleData');
 
